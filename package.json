@@ -1,0 +1,26 @@
+{
+  "name": "sae-alumnos-portal",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@primeuix/themes": "^1.2.3",
+    "@vee-validate/rules": "^4.15.1",
+    "axios": "^1.11.0",
+    "pinia": "^3.0.3",
+    "primevue": "^4.3.7",
+    "router": "^2.2.0",
+    "vee-validate": "^4.5.8",
+    "vue": "^3.5.18",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "vite": "^7.1.2"
+  }
+}
