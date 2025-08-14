@@ -3,11 +3,22 @@ import { createPinia } from 'pinia'
 import './style.css'
 import App from './App.vue'
 import PrimeVue from 'primevue/config'
+import Aura from '@primeuix/themes/aura';
 import axios from "axios";
 import router from "./router";
 
 const app = createApp(App)
-app.use(PrimeVue)
+app.use(PrimeVue, {
+    theme: {
+        preset:Aura,
+        options: {
+            prefix: 'p',
+            darkModeSelector: 'system',
+            cssLayer: false
+        }
+    }
+});
+
 app.mount('#app')
 app.config.globalProperties.$http = axios
 app.use(createPinia())
