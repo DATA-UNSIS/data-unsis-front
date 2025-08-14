@@ -6,6 +6,7 @@ import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura';
 import axios from "axios";
 import router from "./router";
+import { Icon } from "@iconify/vue";
 
 const app = createApp(App)
 app.use(PrimeVue, {
@@ -23,3 +24,4 @@ app.mount('#app')
 app.config.globalProperties.$http = axios
 app.use(createPinia())
 app.use(router)
+app.component('Icon', Icon);
