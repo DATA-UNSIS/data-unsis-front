@@ -1,0 +1,35 @@
+/* src/assets/theme.css */
+
+/* TEMA VERDE BANDERA */
+[data-theme="theme1"] {
+    --color-buttom: #275B3B;
+    --color-back: #2D6849;
+    --color-primary: #2D6849;
+    --color-secondary: #ffffff;
+    --color-tertiary: #5F7D6F;
+    --color-text: #275B3B;
+    --color-plain-text: #000000;
+    --color-shadow: #13442A;
+}
+
+/* TEMA VERDE LIMÓN */
+[data-theme="theme2"] {
+    --color-buttom: #8FB339;
+    --color-primary: #C7D59F;
+    --color-secondary: #DADDD8;
+    --color-tertiary: #96A669;
+    --color-text: #8FB339;
+    --color-plain-text: #4B5842;
+    --color-shadow: #446D00;
+}
+
+/* TEMA VERDE AGUA (SAE-alumnos-portal)*/
+[data-theme="theme3"] {
+    --color-buttom: #9AD7A7;
+    --color-primary: #9AD7A7;
+    --color-secondary: #ffffff;
+    --color-tertiary: #DDE5FF;
+    --color-text: #000000;
+    --color-plain-text: #000000;
+    --color-shadow: #5A9366;
+}
