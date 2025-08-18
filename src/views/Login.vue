@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter();
+
+function login() {
+  console.log('Iniciar sesión');
+  router.push('/alumnos');
+}
 </script>
 
 <template>
@@ -37,7 +45,7 @@ import { Icon } from '@iconify/vue'
         </div>
         
         <div class="button-container">
-          <button class="login-button">
+          <button class="login-button" @click="login()">
             Iniciar Sesión
           </button>
         </div>

@@ -1,13 +1,11 @@
 <script setup>
-import AppContainer from "./views/AppContainer.vue";
-import Login from "./views/Login.vue";
 </script>
 
 <template>
-  <div class = "app-container">
-    <AppContainer />
+  <div class="app-container">
+    <!-- Usamos router-view para mostrar los componentes según la ruta -->
+    <router-view />
   </div>
-
 </template>
 
 <style scoped>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 
 import Sidebar from '../components/Sidebar.vue';
-import Home from './content/Home.vue';
 
 </script>
 
@@ -10,7 +9,7 @@ import Home from './content/Home.vue';
     <Sidebar/>
 
     <div class = "content-container">
-      <Home/>
+      <router-view />
     </div>
   </div>
 

@@ -19,13 +19,13 @@
     <nav class="sidebar-nav">
       <ul class="nav-list">
         <li class="nav-item">
-          <router-link to="/" class="nav-link">
+          <router-link to="/alumnos" class="nav-link">
             <Icon icon="mdi:home" class="nav-icon" />
             <span class="nav-text">Inicio</span>
           </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/seleccion-fichas" class="nav-link">
+          <router-link to="/alumnos/fichas" class="nav-link">
             <Icon icon="mdi:bookmark" class="nav-icon" />
             <span class="nav-text">Selección de Fichas</span>
           </router-link>
@@ -66,9 +66,12 @@
 
 <script setup>
 import { Icon } from "@iconify/vue";
+import { useRouter } from "vue-router";
 
+const router = useRouter();
 const logout = () => {
   console.log("Logout clicked");
+  router.push("/login");
 };
 </script>
 
