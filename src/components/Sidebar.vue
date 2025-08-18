@@ -244,11 +244,11 @@ const logout = () => {
     width: 250px;
     min-width: 250px;
   }
-  
+
   .sae-logo-img {
     max-width: 100px;
   }
-  
+
   .portal-title {
     font-size: 0.8rem;
     margin: 1rem 0.25rem 0 0.25rem;
@@ -286,7 +286,7 @@ const logout = () => {
     width: 200px;
     min-width: 200px;
   }
-  
+
   .sae-logo-img {
     max-width: 80px;
   }
@@ -305,7 +305,7 @@ const logout = () => {
     font-size: 1rem;
     margin-right: 0.4rem;
   }
-  
+
   .options-title {
     font-size: 0.7rem;
   }

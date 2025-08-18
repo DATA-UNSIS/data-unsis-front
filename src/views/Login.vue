@@ -45,7 +45,7 @@ import { Icon } from '@iconify/vue'
     </div>
     
     <div class="login-image">
-      <img src="/src/assets/campus-imagen.png" alt="Campus SAE" />
+      <img src="/src/assets/campus.png" alt="Campus SAE" />
     </div>
   </div>
 </template>
@@ -206,6 +206,7 @@ input[type="password"]:focus {
   background: white;
   padding: 60px 80px 40px 0px;
   overflow: hidden;
+  border-radius: 10px;
 }
 
 .login-image img {
