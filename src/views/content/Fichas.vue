@@ -3,7 +3,7 @@
 </script>
 
 <template>
-
+Seleccion de Fichas
 </template>
 
 <style scoped>
