@@ -17,7 +17,7 @@ function login() {
         <img src="/src/assets/sae-logo.png" alt="SAE Logo" />
       </div>
       
-      <h2>PORTAL DE INSCRIPCIONES</h2>
+      <h2>PORTAL DE ESTADISTICAS</h2>
       
       <div class="form-section">
         <div class="form-group">

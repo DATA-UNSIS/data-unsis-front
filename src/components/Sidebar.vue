@@ -27,15 +27,10 @@
         <li class="nav-item">
           <router-link to="/alumnos/fichas" class="nav-link">
             <Icon icon="mdi:bookmark" class="nav-icon" />
-            <span class="nav-text">Selección de Fichas</span>
+            <span class="nav-text">Estadisticas Generales</span>
           </router-link>
         </li>
-        <li class="nav-item">
-          <router-link to="/consulta-fichas" class="nav-link">
-            <Icon icon="mdi:book-open" class="nav-icon" />
-            <span class="nav-text">Consulta de Fichas</span>
-          </router-link>
-        </li>
+        
         <li class="nav-item">
           <router-link to="/ayuda" class="nav-link">
             <Icon icon="mdi:help-circle" class="nav-icon" />

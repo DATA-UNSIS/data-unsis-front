@@ -4,7 +4,7 @@ import {createRouter, createWebHistory} from "vue-router";
 const Login = () => import('../views/Login.vue')
 const AppContainer = () => import('../views/AppContainer.vue')
 const Home = () => import('../views/content/Home.vue')
-const Fichas = () => import('../views/content/Fichas.vue')
+const Fichas = () => import('../views/content/GeneralGrafics.vue')
 
 const routes = [
   // Ruta raíz - redirección al login

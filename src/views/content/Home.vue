@@ -8,8 +8,8 @@ import Image from 'primevue/image'
       <Image src="/src/assets/LogoUNSIS.png" alt="Logo de la Universidad" width="250" preview/>
     </div>
     <div class="welcome-content">
-      <h1>Bienvenido al Portal de Inscripciones</h1>
-      <p>Sistema de Administración Estudiantil - Universidad</p>
+      <h1>Bienvenido al Portal de Estadisticas</h1>
+      <p>Sistema de Estadisticas de estudio socioeconomico.</p>
     </div>
   </div>
 </template>
