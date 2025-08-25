@@ -225,4 +225,124 @@ input[type="password"]:focus {
   object-fit: contain;
   border-radius: 25px;
 }
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-card {
+    flex-direction: column;
+    margin: 20px;
+    max-width: calc(100% - 40px);
+    border-radius: 15px;
+  }
+  
+  .login-form {
+    flex: none;
+    max-width: 100%;
+    padding: 30px 20px;
+  }
+  
+  .login-image {
+    padding: 0 20px 20px 20px;
+    min-height: 300px;
+  }
+  
+  .login-image img {
+    min-height: 250px;
+    max-height: 400px;
+  }
+  
+  h2 {
+    font-size: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .logo img {
+    max-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    margin: 10px;
+    max-width: calc(100% - 20px);
+    border-radius: 10px;
+  }
+  
+  .login-form {
+    padding: 20px 15px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    font-size: 14px;
+  }
+  
+  .form-group input {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  h2 {
+    font-size: 18px;
+    margin-bottom: 25px;
+  }
+  
+  .logo {
+    margin-bottom: 20px;
+  }
+  
+  .logo img {
+    max-width: 80px;
+  }
+  
+  .links {
+    gap: 10px;
+  }
+  
+  .links a {
+    font-size: 12px;
+  }
+  
+  .login-button {
+    padding: 12px 24px;
+    font-size: 14px;
+    min-width: 140px;
+  }
+  
+  .login-image {
+    padding: 0 15px 15px 15px;
+    min-height: 200px;
+  }
+  
+  .login-image img {
+    min-height: 180px;
+    max-height: 250px;
+    border-radius: 15px;
+  }
+}
+
+/* Para pantallas muy pequeñas */
+@media (max-width: 360px) {
+  .login-card {
+    margin: 5px;
+    max-width: calc(100% - 10px);
+  }
+  
+  .login-form {
+    padding: 15px 10px;
+  }
+  
+  h2 {
+    font-size: 16px;
+  }
+  
+  .login-button {
+    padding: 10px 20px;
+    font-size: 13px;
+    min-width: 120px;
+  }
+}
 </style>

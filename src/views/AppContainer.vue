@@ -16,7 +16,6 @@ import Sidebar from '../components/Sidebar.vue';
 </template>
 
 <style scoped>
-
 .app-container {
   display: flex;
   height: 100vh;
@@ -34,15 +33,16 @@ import Sidebar from '../components/Sidebar.vue';
   background-color: white;
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
   overflow-y: auto;
+  transition: margin-left 0.3s ease;
 }
 
+/* Responsive para tablet */
 @media (max-width: 768px) {
-  .app-container {
-    flex-direction: column;
-  }
-
   .content-container {
-    margin: 15px;
+    margin-left: 20px; /* Sin sidebar visible */
+    margin-top: 60px; /* Espacio para botón de menú móvil */
+    margin-right: 15px;
+    margin-bottom: 15px;
     padding: 20px;
     border-radius: 10px;
   }
@@ -51,10 +51,9 @@ import Sidebar from '../components/Sidebar.vue';
 /* Responsive para móviles */
 @media (max-width: 480px) {
   .content-container {
-    margin: 10px;
+    margin: 50px 10px 10px 10px;
     padding: 15px;
     border-radius: 8px;
   }
 }
-
 </style>
