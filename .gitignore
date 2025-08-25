@@ -1,0 +1,25 @@
+# Dependencias
+node_modules/
+
+# Build de producción
+dist/
+build/
+
+# Archivos temporales de bundlers
+.vite/
+.cache/
+.temp/
+
+# Archivos de logs
+npm-debug.log*
+
+# Archivos de configuración locales
+*.local
+.env.local
+.env.*.local
+
+# Archivos del sistema / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
