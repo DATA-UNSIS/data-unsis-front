@@ -4,7 +4,8 @@ import {createRouter, createWebHistory} from "vue-router";
 const Login = () => import('../views/Login.vue')
 const AppContainer = () => import('../views/AppContainer.vue')
 const Home = () => import('../views/content/Home.vue')
-const Fichas = () => import('../views/content/GeneralGrafics.vue')
+const Fichas = () => import('../views/content/GraficsExample.vue')
+const Grafics = () => import('../views/content/Grafics.vue')
 
 const routes = [
   // Ruta raíz - redirección al login
@@ -34,8 +35,8 @@ const routes = [
       // Ruta para mostrar el componente Fichas
       {
         path: 'fichas',
-        name: 'Fichas',
-        component: Fichas
+        name: 'Graficos',
+        component: Grafics
       }
     ]
   }
