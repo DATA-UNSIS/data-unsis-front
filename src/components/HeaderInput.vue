@@ -13,33 +13,46 @@ const selectedSexo = ref(null)
 
 // Opciones para los dropdowns
 const carreras = ref([
-  { name: 'Ingeniería de Sistemas', code: 'IS' },
-  { name: 'Ingeniería Civil', code: 'IC' },
-  { name: 'Medicina', code: 'MED' },
-  { name: 'Derecho', code: 'DER' },
-  { name: 'Administración de Empresas', code: 'ADE' },
-  { name: 'Psicología', code: 'PSI' }
-])
+  "Licenciatura en Administración Municipal",
+  "Licenciatura en Administración Pública",
+  "Licenciatura en Ciencias Biomédicas",
+  "Licenciatura en Ciencias Empresariales",
+  "Licenciatura en Enfermería",
+  "Licenciatura en Informática",
+  "Licenciatura en Medicina",
+  "Licenciatura en Nutrición",
+  "Licenciatura en Odontología",
+  "Maestría en Administración Universitaria",
+  "Maestría en Gobierno Electrónico",
+  "Maestría en Planeación Estratégica Municipal",
+  "Maestría en Salud Pública",
+  "Doctorado en Gobierno Electrónico"
+]);
 
 const semestres = ref([
-  { name: '1er Semestre', code: '1' },
-  { name: '2do Semestre', code: '2' },
-  { name: '3er Semestre', code: '3' },
-  { name: '4to Semestre', code: '4' },
-  { name: '5to Semestre', code: '5' },
-  { name: '6to Semestre', code: '6' },
-  { name: '7mo Semestre', code: '7' },
-  { name: '8vo Semestre', code: '8' }
-])
+  { name: 'Primero' },
+  { name: 'Segundo' },
+  { name: 'Tercero' },
+  { name: 'Cuarto' },
+  { name: 'Quinto' },
+  { name: 'Sexto' },
+  { name: 'Séptimo' },
+  { name: 'Octavo' },
+  { name: 'Noveno' },
+  { name: 'Décimo' },
+  { name: 'Undécimo' },
+  { name: 'Duodécimo' }
+]);
 
 const sexos = ref([
-  { name: 'Masculino', code: 'M' },
-  { name: 'Femenino', code: 'F' },
-  { name: 'Ambos', code: 'ALL' }
-])
+  { name: 'Mujer' },
+  { name: 'Hombre' },
+  { name: 'Ambos' }
+]);
 
 // Tipo de gráfico seleccionado
-const selectedChart = ref(null)
+const selectedChart = ref(null);
+
 const tiposGrafico = ref([
   { name: 'Distribución por Carrera', code: 'carrera', type: 'pie' },
   { name: 'Nivel Socioeconómico', code: 'socioeconomico', type: 'doughnut' },
@@ -47,39 +60,38 @@ const tiposGrafico = ref([
   { name: 'Servicios en Hogar', code: 'servicios', type: 'radar' },
   { name: 'Procedencia Geográfica', code: 'geografia', type: 'bar' },
   { name: 'Estado Civil', code: 'estadocivil', type: 'pie' }
-])
+]);
 
 // Variable para controlar si las carreras están deshabilitadas
-const isCarrerasDisabled = ref(false)
+const isCarrerasDisabled = ref(false);
 
 // Watch para manejar la selección del tipo de gráfico
 watch(selectedChart, (newChart) => {
   if (newChart && newChart.code === 'carrera') {
     // Si selecciona "Distribución por Carrera", seleccionar todas las carreras y deshabilitar
-    selectedCarrera.value = [...carreras.value] // Seleccionar todas las carreras
-    isCarrerasDisabled.value = true
+    selectedCarrera.value = [...carreras.value]; // Seleccionar todas las carreras
+    isCarrerasDisabled.value = true;
     console.log('Gráfico de carreras seleccionado: todas las carreras habilitadas por defecto')
   } else {
     // Si selecciona otro tipo, habilitar la selección de carreras
-    isCarrerasDisabled.value = false
+    isCarrerasDisabled.value = false;
     // Opcional: limpiar la selección cuando cambie a otro tipo
     // selectedCarrera.value = []
   }
-}, { immediate: true })
+}, { immediate: true });
 
 // Función para generar gráfico, emite el evento al padre
 const generateChart = () => {
   if (!selectedChart.value) {
-    alert('Por favor selecciona un tipo de gráfico')
-    return
+    alert('Por favor selecciona un tipo de gráfico');
+    return;
   }
   
   // Preparar los datos para enviar al backend
   const filterData = {
-    tipoGrafico: selectedChart.value,
-    carreras: selectedCarrera.value.map(c => c.code), // Enviar solo los códigos
-    semestres: selectedSemestre.value.map(s => s.code), // Enviar solo los códigos
-    sexo: selectedSexo.value?.code || null // Enviar el código o null
+    carreras: selectedCarrera.value, // Enviar los nombres directamente
+    semestres: selectedSemestre.value,
+    sexo: selectedSexo.value // Enviar el código o null
   }
   
   console.log('Enviando filtros seleccionados:', filterData)
@@ -137,7 +149,6 @@ const generateChart = () => {
           <MultiSelect
             v-model="selectedCarrera"
             :options="carreras"
-            optionLabel="name"
             placeholder="Selecciona una o varias carreras"
             class="custom-select"
             display="chip"

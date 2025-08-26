@@ -38,7 +38,12 @@ const currentChartIndex = ref(0)
 watch(() => props.chartData, (newData) => {
   if (newData) {
     console.log('ChartDisplay recibió nuevos datos:', newData)
-    createChartFromBackendData(newData)
+    // Verificar si es un array directo o un objeto con propiedades
+    if (Array.isArray(newData)) {
+      createChartFromDirectArray(newData)
+    } else {
+      createChartFromBackendData(newData)
+    }
   }
 }, { deep: true })
 
@@ -206,6 +211,75 @@ const createChartFromBackendData = async (backendResponse: any) => {
     console.log(`Gráfico tipo '${chartType}' creado exitosamente con título: '${chartTitle}'`)
   } catch (error) {
     console.error('Error al crear gráfico con datos del backend:', error)
+  }
+}
+
+// Nueva función para manejar arrays directos como [{ name: "...", count: ... }]
+const createChartFromDirectArray = async (dataArray: any[]) => {
+  await nextTick()
+  if (!chartRef.value) return
+  const ctx = chartRef.value.getContext('2d')
+  if (!ctx) return
+  
+  // Destruir gráfico existente si lo hay
+  if (chartInstance.value) {
+    chartInstance.value.destroy()
+    chartInstance.value = undefined
+  }
+
+  console.log('Creando gráfico con array directo:', dataArray)
+
+  // Extraer labels y values del array
+  const labels = dataArray.map((item: any) => item.name || item.label || 'Sin nombre')
+  const data = dataArray.map((item: any) => item.count || item.value || 0)
+  
+  // Colores por defecto
+  const defaultColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E74C3C', '#C9CBCF']
+  
+  // Configuración por defecto para array directo (gráfico de barras)
+  const chartType = 'bar'
+  const chartTitle = 'Gráfico de Datos'
+  
+  const config: any = {
+    type: chartType,
+    data: {
+      labels: labels,
+      datasets: [{
+        label: chartTitle,
+        data: data,
+        backgroundColor: defaultColors.slice(0, data.length),
+        borderColor: chartType === 'radar' ? defaultColors[0] : defaultColors.slice(0, data.length),
+        borderWidth: chartType === 'radar' ? 2 : 1,
+        fill: chartType === 'radar'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: {
+          display: true,
+          text: chartTitle,
+          font: { size: 16, weight: 'bold' }
+        },
+        legend: {
+          position: chartType === 'bar' ? 'top' : 'bottom',
+          display: chartType !== 'bar'
+        }
+      },
+      scales: chartType === 'bar' ? {
+        y: { beginAtZero: true }
+      } : chartType === 'radar' ? {
+        r: { beginAtZero: true, max: 100 }
+      } : {}
+    }
+  }
+
+  try {
+    chartInstance.value = new Chart(ctx, config)
+    console.log(`Gráfico creado exitosamente desde array directo con ${dataArray.length} elementos`)
+  } catch (error) {
+    console.error('Error al crear gráfico desde array directo:', error)
   }
 }
 
