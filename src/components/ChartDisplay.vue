@@ -17,14 +17,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { Chart, registerables } from 'chart.js'
 
 Chart.register(...registerables)
 
+// Definir las props para recibir datos del componente padre
+const props = defineProps({
+  chartData: {
+    type: Object,
+    default: null
+  }
+})
+
 const chartRef = ref<HTMLCanvasElement>()
 const chartInstance = ref<Chart>()
 const currentChartIndex = ref(0)
+
+// Watch para cuando cambien los datos del backend
+watch(() => props.chartData, (newData) => {
+  if (newData) {
+    console.log('ChartDisplay recibió nuevos datos:', newData)
+    createChartFromBackendData(newData)
+  }
+}, { deep: true })
 
 const chartTypes = ref([
   { name: 'Distribución por Carrera', code: 'carrera', type: 'pie', title: 'Distribución por Carrera' },
@@ -120,6 +136,76 @@ const createChart = async () => {
     chartInstance.value = new Chart(ctx, config)
   } catch (error) {
     console.error('Error al crear gráfico:', error)
+  }
+}
+
+// Nueva función para crear gráficos con datos del backend
+const createChartFromBackendData = async (backendResponse: any) => {
+  await nextTick()
+  if (!chartRef.value) return
+  const ctx = chartRef.value.getContext('2d')
+  if (!ctx) return
+  
+  // Destruir gráfico existente si lo hay
+  if (chartInstance.value) {
+    chartInstance.value.destroy()
+    chartInstance.value = undefined
+  }
+
+  console.log('Creando gráfico con datos del backend:', backendResponse)
+
+  // Extraer información directamente del backend
+  const chartData = backendResponse.datos || backendResponse.data // Los datos para graficar
+  const chartType = backendResponse.tipo || backendResponse.type   // Tipo del gráfico (pie, bar, etc.)
+  const chartTitle = backendResponse.titulo || backendResponse.title // Título del gráfico
+  
+  // Extraer labels y values de la respuesta del backend
+  const labels = chartData.map((item: any) => item.label || item.name)
+  const data = chartData.map((item: any) => item.value || item.count)
+  
+  // Colores por defecto
+  const defaultColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E74C3C', '#C9CBCF']
+  
+  const config: any = {
+    type: chartType,
+    data: {
+      labels: labels,
+      datasets: [{
+        label: chartTitle,
+        data: data,
+        backgroundColor: defaultColors.slice(0, data.length),
+        borderColor: chartType === 'radar' ? defaultColors[0] : defaultColors.slice(0, data.length),
+        borderWidth: chartType === 'radar' ? 2 : 1,
+        fill: chartType === 'radar'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: {
+          display: true,
+          text: chartTitle, // Usar el título que viene del backend
+          font: { size: 16, weight: 'bold' }
+        },
+        legend: {
+          position: chartType === 'bar' ? 'top' : 'bottom',
+          display: chartType !== 'bar'
+        }
+      },
+      scales: chartType === 'bar' ? {
+        y: { beginAtZero: true }
+      } : chartType === 'radar' ? {
+        r: { beginAtZero: true, max: 100 }
+      } : {}
+    }
+  }
+
+  try {
+    chartInstance.value = new Chart(ctx, config)
+    console.log(`Gráfico tipo '${chartType}' creado exitosamente con título: '${chartTitle}'`)
+  } catch (error) {
+    console.error('Error al crear gráfico con datos del backend:', error)
   }
 }
 

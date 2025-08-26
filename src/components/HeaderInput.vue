@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 
-// Referencias reactivas para los valores seleccionados
+// Definir los emits para comunicación con el componente padre
+const emit = defineEmits(['generate-chart'])
+
+// Referencias reactivas
 const selectedCarrera = ref([])
 const selectedSemestre = ref([])
 const selectedSexo = ref(null)
@@ -46,20 +49,43 @@ const tiposGrafico = ref([
   { name: 'Estado Civil', code: 'estadocivil', type: 'pie' }
 ])
 
-// Función para generar gráfico (será llamada por el componente padre)
+// Variable para controlar si las carreras están deshabilitadas
+const isCarrerasDisabled = ref(false)
+
+// Watch para manejar la selección del tipo de gráfico
+watch(selectedChart, (newChart) => {
+  if (newChart && newChart.code === 'carrera') {
+    // Si selecciona "Distribución por Carrera", seleccionar todas las carreras y deshabilitar
+    selectedCarrera.value = [...carreras.value] // Seleccionar todas las carreras
+    isCarrerasDisabled.value = true
+    console.log('Gráfico de carreras seleccionado: todas las carreras habilitadas por defecto')
+  } else {
+    // Si selecciona otro tipo, habilitar la selección de carreras
+    isCarrerasDisabled.value = false
+    // Opcional: limpiar la selección cuando cambie a otro tipo
+    // selectedCarrera.value = []
+  }
+}, { immediate: true })
+
+// Función para generar gráfico, emite el evento al padre
 const generateChart = () => {
   if (!selectedChart.value) {
     alert('Por favor selecciona un tipo de gráfico')
     return
   }
   
-  // Emitir evento al componente padre con los filtros seleccionados
-  console.log('Generar gráfico con:', {
-    chart: selectedChart.value,
-    carrera: selectedCarrera.value,
-    semestre: selectedSemestre.value,
-    sexo: selectedSexo.value
-  })
+  // Preparar los datos para enviar al backend
+  const filterData = {
+    tipoGrafico: selectedChart.value,
+    carreras: selectedCarrera.value.map(c => c.code), // Enviar solo los códigos
+    semestres: selectedSemestre.value.map(s => s.code), // Enviar solo los códigos
+    sexo: selectedSexo.value?.code || null // Enviar el código o null
+  }
+  
+  console.log('Enviando filtros seleccionados:', filterData)
+  
+  // Emitir evento al componente padre con los filtros
+  emit('generate-chart', filterData)
 }
 </script>
 
@@ -106,6 +132,7 @@ const generateChart = () => {
           <label class="filter-label">
             <i class="pi pi-graduation-cap"></i>
             Carrera
+            <span v-if="isCarrerasDisabled" class="disabled-label">(Todas seleccionadas)</span>
           </label>
           <MultiSelect
             v-model="selectedCarrera"
@@ -117,6 +144,7 @@ const generateChart = () => {
             :maxSelectedLabels="2"
             selectedItemsLabel="{0} carreras seleccionadas"
             showClear
+            :disabled="isCarrerasDisabled"
           />
         </div>
 
@@ -394,6 +422,29 @@ const generateChart = () => {
 :deep(.p-select-label.p-placeholder),
 :deep(.p-multiselect-label.p-placeholder) {
   color: #9ca3af;
+}
+
+/* Estilos para campos deshabilitados */
+.disabled-label {
+  font-size: 0.8rem;
+  color: #94a3a3;
+  font-weight: normal;
+  margin-left: 5px;
+}
+
+:deep(.p-multiselect.p-disabled) {
+  background: #f9fafb !important;
+  border-color: #d1d5db !important;
+  opacity: 0.6;
+}
+
+:deep(.p-multiselect.p-disabled .p-multiselect-label) {
+  color: #6b7280 !important;
+}
+
+:deep(.p-multiselect.p-disabled .p-chip) {
+  background: #9ca3af !important;
+  color: white !important;
 }
 
 /* Action Section */
