@@ -8,7 +8,7 @@ const emit = defineEmits(['generate-chart'])
 
 // Referencias reactivas
 const selectedCarrera = ref([])
-const selectedSemestre = ref([])
+const selectedSemestre = ref(null)
 const selectedSexo = ref(null)
 
 // Opciones para los dropdowns
@@ -30,24 +30,24 @@ const carreras = ref([
 ]);
 
 const semestres = ref([
-  { name: 'Primero' },
-  { name: 'Segundo' },
-  { name: 'Tercero' },
-  { name: 'Cuarto' },
-  { name: 'Quinto' },
-  { name: 'Sexto' },
-  { name: 'Séptimo' },
-  { name: 'Octavo' },
-  { name: 'Noveno' },
-  { name: 'Décimo' },
-  { name: 'Undécimo' },
-  { name: 'Duodécimo' }
+  { name: 'Primero', code: 'Primero' },
+  { name: 'Segundo', code: 'Segundo' },
+  { name: 'Tercero', code: 'Tercero' },
+  { name: 'Cuarto', code: 'Cuarto' },
+  { name: 'Quinto', code: 'Quinto' },
+  { name: 'Sexto', code: 'Sexto' },
+  { name: 'Séptimo', code: 'Séptimo' },
+  { name: 'Octavo', code: 'Octavo' },
+  { name: 'Noveno', code: 'Noveno' },
+  { name: 'Décimo', code: 'Décimo' },
+  { name: 'Undécimo', code: 'Undécimo' },
+  { name: 'Duodécimo', code: 'Duodécimo' }
 ]);
 
 const sexos = ref([
-  { name: 'Mujer' },
-  { name: 'Hombre' },
-  { name: 'Ambos' }
+  { name: 'Mujer', code: 'Mujer' },
+  { name: 'Hombre', code: 'Hombre' },
+  { name: 'Ambos', code: 'Ambos' }
 ]);
 
 // Tipo de gráfico seleccionado
@@ -89,9 +89,9 @@ const generateChart = () => {
   
   // Preparar los datos para enviar al backend
   const filterData = {
-    carreras: selectedCarrera.value, // Enviar los nombres directamente
-    semestres: selectedSemestre.value,
-    sexo: selectedSexo.value // Enviar el código o null
+    carrera: selectedCarrera.value,                    // Array de strings de carreras
+    semestre: selectedSemestre.value?.code || "",      // String del semestre seleccionado
+    sexo: selectedSexo.value?.code || ""               // String del sexo seleccionado
   }
   
   console.log('Enviando filtros seleccionados:', filterData)
@@ -159,21 +159,18 @@ const generateChart = () => {
           />
         </div>
 
-        <!-- MultiSelect Semestre -->
+        <!-- Select Semestre -->
         <div class="filter-item">
           <label class="filter-label">
             <i class="pi pi-calendar"></i>
             Semestre
           </label>
-          <MultiSelect
+          <Select
             v-model="selectedSemestre"
             :options="semestres"
             optionLabel="name"
-            placeholder="Selecciona uno o varios semestres"
+            placeholder="Selecciona un semestre"
             class="custom-select"
-            display="chip"
-            :maxSelectedLabels="2"
-            selectedItemsLabel="{0} semestres seleccionados"
             showClear
           />
         </div>

@@ -1,6 +1,6 @@
 // Servicio para manejar las llamadas a la API de estadísticas
 
-const API_BASE_URL = 'http://localhost:8080/api/stats'
+const API_BASE_URL = 'http://localhost:8080/json/testTotalAlumnos'
 
 export const statsApi = {
   /**
@@ -10,9 +10,9 @@ export const statsApi = {
    */
   async getChartData(filters) {
     try {
-      console.log('Enviando filtros al backend:', filters.tipoGrafico, filters.carreras, filters.semestres, filters.sexo)
+      console.log('Enviando filtros al backend:', filters.carrera, filters.semestre, filters.sexo)
       
-      const response = await fetch(`${API_BASE_URL}/chart-data`, {
+      const response = await fetch(`${API_BASE_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
