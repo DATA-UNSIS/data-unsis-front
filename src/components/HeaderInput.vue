@@ -55,7 +55,7 @@ const selectedChart = ref(null);
 
 const tiposGrafico = ref([
   { name: 'Distribución por Carrera', code: 'MAJOR_DISTRIBUTION', type: 'pie' },
-  { name: 'Nivel Socioeconómico', code: 'ECONOMI_LEVEL', type: 'doughnut' },
+  { name: 'Nivel Socioeconómico', code: 'ECONOMIC_LEVEL', type: 'doughnut' },
   { name: 'Becas Solicitadas', code: 'SCHOLARSHIPS_REQUESTED', type: 'bar' },
   { name: 'Servicios en Hogar', code: 'HOUSEHOLD_SERVICES', type: 'radar' },
   { name: 'Procedencia Geográfica', code: 'GEOGRAPHICAL_ORIGIN', type: 'bar' },

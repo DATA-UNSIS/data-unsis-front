@@ -150,6 +150,18 @@ const createChart = async () => {
 }
 
 // Nueva función para crear gráficos con datos del backend
+// Formato esperado del JSON:
+// {
+//   "success": true,
+//   "data": {
+//     "titulo": "MAJOR_DISTRIBUTION", // Código del gráfico (se usa para buscar en chartTypes)
+//     "datos": [
+//       { "label": "Texto", "value": 45 },
+//       { "label": "Texto2", "value": 30 }
+//     ]
+//   }
+// }
+// El título del gráfico se toma de la propiedad "title" del chartType correspondiente
 const createChartFromBackendData = async (backendResponse: any) => {
   await nextTick()
   if (!chartRef.value) return
@@ -179,23 +191,26 @@ const createChartFromBackendData = async (backendResponse: any) => {
 
   // Extraer información del nuevo formato
   const chartData = backendResponse.data.datos // Array de objetos con label y value
-  const chartTitle = backendResponse.data.titulo // Título del gráfico
+  const chartCode = backendResponse.data.titulo // Código del gráfico (ej: "MAJOR_DISTRIBUTION")
+
+  // Buscar el chartType correspondiente usando el código
+  const currentChartType = chartTypes.value.find(chart => chart.code === chartCode)
+
+  if (!currentChartType) {
+    console.error('Tipo de gráfico no encontrado para el código:', chartCode)
+    showErrorChart('Tipo de gráfico no reconocido')
+    return
+  }
+
+  // Usar el título y tipo del chartType encontrado
+  const chartTitle = currentChartType.title
+  const chartType = currentChartType.type
 
   // Verificar que hay datos para mostrar
   if (!Array.isArray(chartData) || chartData.length === 0) {
     console.warn('No hay datos para mostrar en el gráfico')
     showErrorChart('No hay datos disponibles para mostrar')
     return
-  }
-
-  // Determinar el tipo de gráfico basado en el título o usar por defecto
-  let chartType = 'bar' // Tipo por defecto
-  if (chartTitle.includes('carrera') || chartTitle.includes('civil')) {
-    chartType = 'pie'
-  } else if (chartTitle.includes('socioeconomico')) {
-    chartType = 'doughnut'
-  } else if (chartTitle.includes('servicios')) {
-    chartType = 'radar'
   }
 
   // Extraer labels y values de la respuesta del backend
@@ -242,7 +257,7 @@ const createChartFromBackendData = async (backendResponse: any) => {
 
   try {
     chartInstance.value = new Chart(ctx, config)
-    console.log(`Gráfico tipo '${chartType}' creado exitosamente con título: '${chartTitle}'`)
+    console.log(`Gráfico tipo '${chartType}' creado exitosamente con código: '${chartCode}' y título: '${chartTitle}'`)
   } catch (error) {
     console.error('Error al crear gráfico con datos del backend:', error)
     showErrorChart('Error al crear el gráfico')
@@ -385,10 +400,34 @@ const showErrorChart = async (errorMessage: string) => {
   }
 }
 
-onMounted(async () => {
-  await nextTick()
-  await createChart()
-})
+// Función de prueba para verificar el formato JSON
+const testJsonFormat = () => {
+  const testData = {
+    "success": true,
+    "data": {
+      "titulo": "MAJOR_DISTRIBUTION",
+      "datos": [
+        { "label": "Ingeniería en Sistemas", "value": 45 },
+        { "label": "Ingeniería Civil", "value": 30 },
+        { "label": "Medicina", "value": 25 },
+        { "label": "Derecho", "value": 20 }
+      ]
+    }
+  }
+
+  console.log('🧪 Probando formato JSON esperado:', testData)
+  console.log('📊 Código recibido:', testData.data.titulo)
+  console.log('📈 Datos a graficar:', testData.data.datos)
+
+  createChartFromBackendData(testData)
+}
+
+// Exponer función de prueba para desarrollo
+if (import.meta.env.DEV) {
+  // @ts-ignore
+  window.testChartDisplay = testJsonFormat
+  console.log('🧪 Función de prueba disponible: window.testChartDisplay()')
+}
 </script>
 
 <style scoped>
