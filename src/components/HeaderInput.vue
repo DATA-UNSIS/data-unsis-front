@@ -1,65 +1,112 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 
-// Referencias reactivas para los valores seleccionados
+// Definir los emits para comunicación con el componente padre
+const emit = defineEmits(['generate-chart'])
+
+// Referencias reactivas
 const selectedCarrera = ref([])
-const selectedSemestre = ref([])
+const selectedSemestre = ref(null)
 const selectedSexo = ref(null)
 
 // Opciones para los dropdowns
 const carreras = ref([
-  { name: 'Ingeniería de Sistemas', code: 'IS' },
-  { name: 'Ingeniería Civil', code: 'IC' },
-  { name: 'Medicina', code: 'MED' },
-  { name: 'Derecho', code: 'DER' },
-  { name: 'Administración de Empresas', code: 'ADE' },
-  { name: 'Psicología', code: 'PSI' }
-])
+  "Licenciatura en Administración Municipal",
+  "Licenciatura en Administración Pública",
+  "Licenciatura en Ciencias Biomédicas",
+  "Licenciatura en Ciencias Empresariales",
+  "Licenciatura en Enfermería",
+  "Licenciatura en Informática",
+  "Licenciatura en Medicina",
+  "Licenciatura en Nutrición",
+  "Licenciatura en Odontología",
+  "Maestría en Administración Universitaria",
+  "Maestría en Gobierno Electrónico",
+  "Maestría en Planeación Estratégica Municipal",
+  "Maestría en Salud Pública",
+  "Doctorado en Gobierno Electrónico"
+]);
 
 const semestres = ref([
-  { name: '1er Semestre', code: '1' },
-  { name: '2do Semestre', code: '2' },
-  { name: '3er Semestre', code: '3' },
-  { name: '4to Semestre', code: '4' },
-  { name: '5to Semestre', code: '5' },
-  { name: '6to Semestre', code: '6' },
-  { name: '7mo Semestre', code: '7' },
-  { name: '8vo Semestre', code: '8' }
-])
+  'Primero',
+  'Segundo',
+  'Tercero',
+  'Cuarto',
+  'Quinto',
+  'Sexto',
+  'Séptimo',
+  'Octavo',
+  'Noveno',
+  'Décimo',
+  'Undécimo',
+  'Duodécimo'
+]);
 
 const sexos = ref([
-  { name: 'Masculino', code: 'M' },
-  { name: 'Femenino', code: 'F' },
-  { name: 'Ambos', code: 'ALL' }
-])
+  'Mujer',
+  'Hombre',
+  'Ambos'
+]);
 
 // Tipo de gráfico seleccionado
-const selectedChart = ref(null)
-const tiposGrafico = ref([
-  { name: 'Distribución por Carrera', code: 'carrera', type: 'pie' },
-  { name: 'Nivel Socioeconómico', code: 'socioeconomico', type: 'doughnut' },
-  { name: 'Becas Solicitadas', code: 'becas', type: 'bar' },
-  { name: 'Servicios en Hogar', code: 'servicios', type: 'radar' },
-  { name: 'Procedencia Geográfica', code: 'geografia', type: 'bar' },
-  { name: 'Estado Civil', code: 'estadocivil', type: 'pie' }
-])
+const selectedChart = ref(null);
 
-// Función para generar gráfico (será llamada por el componente padre)
+const tiposGrafico = ref([
+  { name: 'Distribución por Carrera', code: 'MAJOR_DISTRIBUTION', type: 'pie' },
+  { name: 'Nivel Socioeconómico', code: 'ECONOMIC_LEVEL', type: 'doughnut' },
+  { name: 'Becas Solicitadas', code: 'SCHOLARSHIPS_REQUESTED', type: 'bar' },
+  { name: 'Servicios en Hogar', code: 'HOUSEHOLD_SERVICES', type: 'radar' },
+  { name: 'Procedencia Geográfica', code: 'GEOGRAPHICAL_ORIGIN', type: 'bar' },
+  { name: 'Estado Civil', code: 'CIVIL_STATE', type: 'pie' }
+]);
+
+// Variable para controlar si las carreras están deshabilitadas
+const isCarrerasDisabled = ref(false);
+
+// Watch para manejar la selección del tipo de gráfico
+watch(selectedChart, (newChart) => {
+  if (newChart && newChart.code === 'MAJOR_DISTRIBUTION') {
+    selectedCarrera.value = [...carreras.value]; 
+    isCarrerasDisabled.value = true;
+    console.log('Gráfico de carreras seleccionado: todas las carreras habilitadas por defecto')
+  } else {
+    isCarrerasDisabled.value = false;
+
+  }
+}, { immediate: true });
+
+// Función para generar gráfico, emite el evento al padre
 const generateChart = () => {
   if (!selectedChart.value) {
-    alert('Por favor selecciona un tipo de gráfico')
-    return
+    alert('Por favor selecciona un tipo de gráfico');
+    return;
   }
-  
-  // Emitir evento al componente padre con los filtros seleccionados
-  console.log('Generar gráfico con:', {
-    chart: selectedChart.value,
-    carrera: selectedCarrera.value,
-    semestre: selectedSemestre.value,
-    sexo: selectedSexo.value
-  })
+
+  // Validar que al menos se haya seleccionado algo
+  if (selectedCarrera.value.length === 0) {
+    alert('Por favor selecciona al menos una carrera');
+    return;
+  }
+
+  if (selectedSemestre.value.length === 0) {
+    alert('Por favor selecciona al menos un semestre');
+    return;
+  }
+
+  // Preparar los datos para enviar al backend según el formato requerido
+  const filterData = {
+    titulo: selectedChart.value.code, // Usar el código del gráfico como título
+    carreras: selectedCarrera.value, // Array de carreras seleccionadas
+    semestres: selectedSemestre.value, // Array de semestres seleccionados
+    sexos: selectedSexo.value || "Ambos" // Usar "Ambos" si no se selecciona ninguno
+  }
+
+  console.log('Enviando filtros seleccionados:', filterData)
+
+  // Emitir evento al componente padre con los filtros
+  emit('generate-chart', filterData)
 }
 </script>
 
@@ -106,35 +153,32 @@ const generateChart = () => {
           <label class="filter-label">
             <i class="pi pi-graduation-cap"></i>
             Carrera
+            <span v-if="isCarrerasDisabled" class="disabled-label">(Todas seleccionadas)</span>
           </label>
           <MultiSelect
             v-model="selectedCarrera"
             :options="carreras"
-            optionLabel="name"
             placeholder="Selecciona una o varias carreras"
             class="custom-select"
             display="chip"
             :maxSelectedLabels="2"
             selectedItemsLabel="{0} carreras seleccionadas"
             showClear
+            :disabled="isCarrerasDisabled"
           />
         </div>
 
-        <!-- MultiSelect Semestre -->
+        <!-- Select Semestre -->
         <div class="filter-item">
           <label class="filter-label">
             <i class="pi pi-calendar"></i>
             Semestre
           </label>
-          <MultiSelect
+          <Select
             v-model="selectedSemestre"
             :options="semestres"
-            optionLabel="name"
             placeholder="Selecciona uno o varios semestres"
             class="custom-select"
-            display="chip"
-            :maxSelectedLabels="2"
-            selectedItemsLabel="{0} semestres seleccionados"
             showClear
           />
         </div>
@@ -148,7 +192,6 @@ const generateChart = () => {
           <Select 
             v-model="selectedSexo" 
             :options="sexos" 
-            optionLabel="name" 
             placeholder="Selecciona el sexo"
             class="custom-select"
             showClear
@@ -394,6 +437,29 @@ const generateChart = () => {
 :deep(.p-select-label.p-placeholder),
 :deep(.p-multiselect-label.p-placeholder) {
   color: #9ca3af;
+}
+
+/* Estilos para campos deshabilitados */
+.disabled-label {
+  font-size: 0.8rem;
+  color: #94a3a3;
+  font-weight: normal;
+  margin-left: 5px;
+}
+
+:deep(.p-multiselect.p-disabled) {
+  background: #f9fafb !important;
+  border-color: #d1d5db !important;
+  opacity: 0.6;
+}
+
+:deep(.p-multiselect.p-disabled .p-multiselect-label) {
+  color: #6b7280 !important;
+}
+
+:deep(.p-multiselect.p-disabled .p-chip) {
+  background: #9ca3af !important;
+  color: white !important;
 }
 
 /* Action Section */

@@ -17,22 +17,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { Chart, registerables } from 'chart.js'
 
 Chart.register(...registerables)
+
+// Definir las props para recibir datos del componente padre
+const props = defineProps({
+  chartData: {
+    type: Object,
+    default: null
+  }
+})
 
 const chartRef = ref<HTMLCanvasElement>()
 const chartInstance = ref<Chart>()
 const currentChartIndex = ref(0)
 
+// Watch para cuando cambien los datos del backend
+watch(() => props.chartData, (newData) => {
+  if (newData) {
+    console.log('ChartDisplay recibió nuevos datos:', newData)
+
+    // Verificar si es el nuevo formato esperado
+    if (newData.success && newData.data && newData.data.datos) {
+      createChartFromBackendData(newData)
+    } else if (Array.isArray(newData)) {
+      createChartFromDirectArray(newData)
+    } else {
+      console.warn('Formato de datos no reconocido:', newData)
+      // Intentar procesar como formato anterior por compatibilidad
+      createChartFromBackendData(newData)
+    }
+  }
+}, { deep: true })
+
 const chartTypes = ref([
-  { name: 'Distribución por Carrera', code: 'carrera', type: 'pie', title: 'Distribución por Carrera' },
-  { name: 'Nivel Socioeconómico', code: 'socioeconomico', type: 'doughnut', title: 'Nivel Socioeconómico' },
-  { name: 'Becas Solicitadas', code: 'becas', type: 'bar', title: 'Becas Solicitadas' },
-  { name: 'Servicios en Hogar', code: 'servicios', type: 'radar', title: 'Servicios en Hogar' },
-  { name: 'Procedencia Geográfica', code: 'geografia', type: 'bar', title: 'Procedencia Geográfica' },
-  { name: 'Estado Civil', code: 'estadocivil', type: 'pie', title: 'Estado Civil' }
+  { name: 'Distribución por Carrera', code: 'MAJOR_DISTRIBUTION', type: 'pie', title: 'Distribución por Carrera' },
+  { name: 'Nivel Socioeconómico', code: 'ECONOMI_LEVEL', type: 'doughnut', title: 'Nivel Socioeconómico' },
+  { name: 'Becas Solicitadas', code: 'SCHOLARSHIPS_REQUESTED', type: 'bar', title: 'Becas Solicitadas' },
+  { name: 'Servicios en Hogar', code: 'HOUSEHOLD_SERVICES', type: 'radar', title: 'Servicios en Hogar' },
+  { name: 'Procedencia Geográfica', code: 'GEOGRAPHICAL_ORIGIN', type: 'bar', title: 'Procedencia Geográfica' },
+  { name: 'Estado Civil', code: 'CIVIL_STATE', type: 'pie', title: 'Estado Civil' }
 ])
 
 const datosGraficos = {
@@ -123,15 +149,285 @@ const createChart = async () => {
   }
 }
 
+// Nueva función para crear gráficos con datos del backend
+// Formato esperado del JSON:
+// {
+//   "success": true,
+//   "data": {
+//     "titulo": "MAJOR_DISTRIBUTION", // Código del gráfico (se usa para buscar en chartTypes)
+//     "datos": [
+//       { "label": "Texto", "value": 45 },
+//       { "label": "Texto2", "value": 30 }
+//     ]
+//   }
+// }
+// El título del gráfico se toma de la propiedad "title" del chartType correspondiente
+const createChartFromBackendData = async (backendResponse: any) => {
+  await nextTick()
+  if (!chartRef.value) return
+  const ctx = chartRef.value.getContext('2d')
+  if (!ctx) return
+
+  // Destruir gráfico existente si lo hay
+  if (chartInstance.value) {
+    chartInstance.value.destroy()
+    chartInstance.value = undefined
+  }
+
+  console.log('Creando gráfico con datos del backend:', backendResponse)
+
+  // Verificar si la respuesta tiene el formato esperado
+  if (!backendResponse.success) {
+    console.error('Error en la respuesta del backend:', backendResponse)
+    showErrorChart('Error al cargar los datos del servidor')
+    return
+  }
+
+  if (!backendResponse.data || !backendResponse.data.datos) {
+    console.error('Datos no encontrados en la respuesta:', backendResponse)
+    showErrorChart('Formato de datos incorrecto')
+    return
+  }
+
+  // Extraer información del nuevo formato
+  const chartData = backendResponse.data.datos // Array de objetos con label y value
+  const chartCode = backendResponse.data.titulo // Código del gráfico (ej: "MAJOR_DISTRIBUTION")
+
+  // Buscar el chartType correspondiente usando el código
+  const currentChartType = chartTypes.value.find(chart => chart.code === chartCode)
+
+  if (!currentChartType) {
+    console.error('Tipo de gráfico no encontrado para el código:', chartCode)
+    showErrorChart('Tipo de gráfico no reconocido')
+    return
+  }
+
+  // Usar el título y tipo del chartType encontrado
+  const chartTitle = currentChartType.title
+  const chartType = currentChartType.type
+
+  // Verificar que hay datos para mostrar
+  if (!Array.isArray(chartData) || chartData.length === 0) {
+    console.warn('No hay datos para mostrar en el gráfico')
+    showErrorChart('No hay datos disponibles para mostrar')
+    return
+  }
+
+  // Extraer labels y values de la respuesta del backend
+  const labels = chartData.map((item: any) => item.label)
+  const data = chartData.map((item: any) => item.value)
+
+  // Colores por defecto
+  const defaultColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E74C3C', '#C9CBCF']
+
+  const config: any = {
+    type: chartType,
+    data: {
+      labels: labels,
+      datasets: [{
+        label: chartTitle,
+        data: data,
+        backgroundColor: defaultColors.slice(0, data.length),
+        borderColor: chartType === 'radar' ? defaultColors[0] : defaultColors.slice(0, data.length),
+        borderWidth: chartType === 'radar' ? 2 : 1,
+        fill: chartType === 'radar'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: {
+          display: true,
+          text: chartTitle, // Usar el título que viene del backend
+          font: { size: 16, weight: 'bold' }
+        },
+        legend: {
+          position: chartType === 'bar' ? 'top' : 'bottom',
+          display: chartType !== 'bar'
+        }
+      },
+      scales: chartType === 'bar' ? {
+        y: { beginAtZero: true }
+      } : chartType === 'radar' ? {
+        r: { beginAtZero: true, max: Math.max(...data) * 1.2 }
+      } : {}
+    }
+  }
+
+  try {
+    chartInstance.value = new Chart(ctx, config)
+    console.log(`Gráfico tipo '${chartType}' creado exitosamente con código: '${chartCode}' y título: '${chartTitle}'`)
+  } catch (error) {
+    console.error('Error al crear gráfico con datos del backend:', error)
+    showErrorChart('Error al crear el gráfico')
+  }
+}// Nueva función para manejar arrays directos como [{ name: "...", count: ... }]
+const createChartFromDirectArray = async (dataArray: any[]) => {
+  await nextTick()
+  if (!chartRef.value) return
+  const ctx = chartRef.value.getContext('2d')
+  if (!ctx) return
+  
+  // Destruir gráfico existente si lo hay
+  if (chartInstance.value) {
+    chartInstance.value.destroy()
+    chartInstance.value = undefined
+  }
+
+  console.log('Creando gráfico con array directo:', dataArray)
+
+  // Extraer labels y values del array
+  const labels = dataArray.map((item: any) => item.name || item.label || 'Sin nombre')
+  const data = dataArray.map((item: any) => item.count || item.value || 0)
+  
+  // Colores por defecto
+  const defaultColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E74C3C', '#C9CBCF']
+  
+  // Configuración por defecto para array directo (gráfico de barras)
+  const chartType = 'bar'
+  const chartTitle = 'Gráfico de Datos'
+  
+  const config: any = {
+    type: chartType,
+    data: {
+      labels: labels,
+      datasets: [{
+        label: chartTitle,
+        data: data,
+        backgroundColor: defaultColors.slice(0, data.length),
+        borderColor: chartType === 'radar' ? defaultColors[0] : defaultColors.slice(0, data.length),
+        borderWidth: chartType === 'radar' ? 2 : 1,
+        fill: chartType === 'radar'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: {
+          display: true,
+          text: chartTitle,
+          font: { size: 16, weight: 'bold' }
+        },
+        legend: {
+          position: chartType === 'bar' ? 'top' : 'bottom',
+          display: chartType !== 'bar'
+        }
+      },
+      scales: chartType === 'bar' ? {
+        y: { beginAtZero: true }
+      } : chartType === 'radar' ? {
+        r: { beginAtZero: true, max: 100 }
+      } : {}
+    }
+  }
+
+  try {
+    chartInstance.value = new Chart(ctx, config)
+    console.log(`Gráfico creado exitosamente desde array directo con ${dataArray.length} elementos`)
+  } catch (error) {
+    console.error('Error al crear gráfico desde array directo:', error)
+  }
+}
+
 const nextChart = async () => {
   currentChartIndex.value = (currentChartIndex.value + 1) % chartTypes.value.length
   await createChart()
 }
 
-onMounted(async () => {
+// Función para mostrar gráfico de error
+const showErrorChart = async (errorMessage: string) => {
   await nextTick()
-  await createChart()
-})
+  if (!chartRef.value) return
+  const ctx = chartRef.value.getContext('2d')
+  if (!ctx) return
+
+  // Destruir gráfico existente si lo hay
+  if (chartInstance.value) {
+    chartInstance.value.destroy()
+    chartInstance.value = undefined
+  }
+
+  const config: any = {
+    type: 'bar',
+    data: {
+      labels: ['Error'],
+      datasets: [{
+        label: 'Error',
+        data: [1],
+        backgroundColor: ['#E74C3C'],
+        borderColor: ['#C0392B'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: {
+          display: true,
+          text: errorMessage,
+          font: { size: 16, weight: 'bold' },
+          color: '#E74C3C'
+        },
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 1,
+          ticks: {
+            display: false
+          }
+        },
+        x: {
+          ticks: {
+            display: false
+          }
+        }
+      }
+    }
+  }
+
+  try {
+    chartInstance.value = new Chart(ctx, config)
+    console.log('Gráfico de error mostrado:', errorMessage)
+  } catch (error) {
+    console.error('Error al mostrar gráfico de error:', error)
+  }
+}
+
+// Función de prueba para verificar el formato JSON
+const testJsonFormat = () => {
+  const testData = {
+    "success": true,
+    "data": {
+      "titulo": "MAJOR_DISTRIBUTION",
+      "datos": [
+        { "label": "Ingeniería en Sistemas", "value": 45 },
+        { "label": "Ingeniería Civil", "value": 30 },
+        { "label": "Medicina", "value": 25 },
+        { "label": "Derecho", "value": 20 }
+      ]
+    }
+  }
+
+  console.log('🧪 Probando formato JSON esperado:', testData)
+  console.log('📊 Código recibido:', testData.data.titulo)
+  console.log('📈 Datos a graficar:', testData.data.datos)
+
+  createChartFromBackendData(testData)
+}
+
+// Exponer función de prueba para desarrollo
+if (import.meta.env.DEV) {
+  // @ts-ignore
+  window.testChartDisplay = testJsonFormat
+  console.log('🧪 Función de prueba disponible: window.testChartDisplay()')
+}
 </script>
 
 <style scoped>
