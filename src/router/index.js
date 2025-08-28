@@ -1,4 +1,5 @@
 import {createRouter, createWebHistory} from "vue-router";
+import Help from "../views/content/Help.vue";
 
 // Importa los componentes
 const Login = () => import('../views/Login.vue')
@@ -36,6 +37,12 @@ const routes = [
         path: 'fichas',
         name: 'Graficos',
         component: Grafics
+      },
+       // Ruta para mostrar el componente Help
+      {
+        path: 'help',
+        name: 'Help',
+        component: Help
       }
     ]
   }
