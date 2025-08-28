@@ -30,36 +30,36 @@ const carreras = ref([
 ]);
 
 const semestres = ref([
-  { name: 'Primero', code: 'Primero' },
-  { name: 'Segundo', code: 'Segundo' },
-  { name: 'Tercero', code: 'Tercero' },
-  { name: 'Cuarto', code: 'Cuarto' },
-  { name: 'Quinto', code: 'Quinto' },
-  { name: 'Sexto', code: 'Sexto' },
-  { name: 'Séptimo', code: 'Séptimo' },
-  { name: 'Octavo', code: 'Octavo' },
-  { name: 'Noveno', code: 'Noveno' },
-  { name: 'Décimo', code: 'Décimo' },
-  { name: 'Undécimo', code: 'Undécimo' },
-  { name: 'Duodécimo', code: 'Duodécimo' }
+  'Primero',
+  'Segundo',
+  'Tercero',
+  'Cuarto',
+  'Quinto',
+  'Sexto',
+  'Séptimo',
+  'Octavo',
+  'Noveno',
+  'Décimo',
+  'Undécimo',
+  'Duodécimo'
 ]);
 
 const sexos = ref([
-  { name: 'Mujer', code: 'Mujer' },
-  { name: 'Hombre', code: 'Hombre' },
-  { name: 'Ambos', code: 'Ambos' }
+  'Mujer',
+  'Hombre',
+  'Ambos'
 ]);
 
 // Tipo de gráfico seleccionado
 const selectedChart = ref(null);
 
 const tiposGrafico = ref([
-  { name: 'Distribución por Carrera', code: 'carrera', type: 'pie' },
-  { name: 'Nivel Socioeconómico', code: 'socioeconomico', type: 'doughnut' },
-  { name: 'Becas Solicitadas', code: 'becas', type: 'bar' },
-  { name: 'Servicios en Hogar', code: 'servicios', type: 'radar' },
-  { name: 'Procedencia Geográfica', code: 'geografia', type: 'bar' },
-  { name: 'Estado Civil', code: 'estadocivil', type: 'pie' }
+  { name: 'Distribución por Carrera', code: 'MAJOR_DISTRIBUTION', type: 'pie' },
+  { name: 'Nivel Socioeconómico', code: 'ECONOMI_LEVEL', type: 'doughnut' },
+  { name: 'Becas Solicitadas', code: 'SCHOLARSHIPS_REQUESTED', type: 'bar' },
+  { name: 'Servicios en Hogar', code: 'HOUSEHOLD_SERVICES', type: 'radar' },
+  { name: 'Procedencia Geográfica', code: 'GEOGRAPHICAL_ORIGIN', type: 'bar' },
+  { name: 'Estado Civil', code: 'CIVIL_STATE', type: 'pie' }
 ]);
 
 // Variable para controlar si las carreras están deshabilitadas
@@ -67,16 +67,13 @@ const isCarrerasDisabled = ref(false);
 
 // Watch para manejar la selección del tipo de gráfico
 watch(selectedChart, (newChart) => {
-  if (newChart && newChart.code === 'carrera') {
-    // Si selecciona "Distribución por Carrera", seleccionar todas las carreras y deshabilitar
-    selectedCarrera.value = [...carreras.value]; // Seleccionar todas las carreras
+  if (newChart && newChart.code === 'MAJOR_DISTRIBUTION') {
+    selectedCarrera.value = [...carreras.value]; 
     isCarrerasDisabled.value = true;
     console.log('Gráfico de carreras seleccionado: todas las carreras habilitadas por defecto')
   } else {
-    // Si selecciona otro tipo, habilitar la selección de carreras
     isCarrerasDisabled.value = false;
-    // Opcional: limpiar la selección cuando cambie a otro tipo
-    // selectedCarrera.value = []
+
   }
 }, { immediate: true });
 
@@ -86,16 +83,28 @@ const generateChart = () => {
     alert('Por favor selecciona un tipo de gráfico');
     return;
   }
-  
-  // Preparar los datos para enviar al backend
-  const filterData = {
-    carrera: selectedCarrera.value,                    // Array de strings de carreras
-    semestre: selectedSemestre.value?.code || "",      // String del semestre seleccionado
-    sexo: selectedSexo.value?.code || ""               // String del sexo seleccionado
+
+  // Validar que al menos se haya seleccionado algo
+  if (selectedCarrera.value.length === 0) {
+    alert('Por favor selecciona al menos una carrera');
+    return;
   }
-  
+
+  if (selectedSemestre.value.length === 0) {
+    alert('Por favor selecciona al menos un semestre');
+    return;
+  }
+
+  // Preparar los datos para enviar al backend según el formato requerido
+  const filterData = {
+    titulo: selectedChart.value.code, // Usar el código del gráfico como título
+    carreras: selectedCarrera.value, // Array de carreras seleccionadas
+    semestres: selectedSemestre.value, // Array de semestres seleccionados
+    sexos: selectedSexo.value || "Ambos" // Usar "Ambos" si no se selecciona ninguno
+  }
+
   console.log('Enviando filtros seleccionados:', filterData)
-  
+
   // Emitir evento al componente padre con los filtros
   emit('generate-chart', filterData)
 }
@@ -168,8 +177,7 @@ const generateChart = () => {
           <Select
             v-model="selectedSemestre"
             :options="semestres"
-            optionLabel="name"
-            placeholder="Selecciona un semestre"
+            placeholder="Selecciona uno o varios semestres"
             class="custom-select"
             showClear
           />
@@ -184,7 +192,6 @@ const generateChart = () => {
           <Select 
             v-model="selectedSexo" 
             :options="sexos" 
-            optionLabel="name" 
             placeholder="Selecciona el sexo"
             class="custom-select"
             showClear

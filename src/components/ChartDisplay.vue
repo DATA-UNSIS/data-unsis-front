@@ -38,22 +38,27 @@ const currentChartIndex = ref(0)
 watch(() => props.chartData, (newData) => {
   if (newData) {
     console.log('ChartDisplay recibió nuevos datos:', newData)
-    // Verificar si es un array directo o un objeto con propiedades
-    if (Array.isArray(newData)) {
+
+    // Verificar si es el nuevo formato esperado
+    if (newData.success && newData.data && newData.data.datos) {
+      createChartFromBackendData(newData)
+    } else if (Array.isArray(newData)) {
       createChartFromDirectArray(newData)
     } else {
+      console.warn('Formato de datos no reconocido:', newData)
+      // Intentar procesar como formato anterior por compatibilidad
       createChartFromBackendData(newData)
     }
   }
 }, { deep: true })
 
 const chartTypes = ref([
-  { name: 'Distribución por Carrera', code: 'carrera', type: 'pie', title: 'Distribución por Carrera' },
-  { name: 'Nivel Socioeconómico', code: 'socioeconomico', type: 'doughnut', title: 'Nivel Socioeconómico' },
-  { name: 'Becas Solicitadas', code: 'becas', type: 'bar', title: 'Becas Solicitadas' },
-  { name: 'Servicios en Hogar', code: 'servicios', type: 'radar', title: 'Servicios en Hogar' },
-  { name: 'Procedencia Geográfica', code: 'geografia', type: 'bar', title: 'Procedencia Geográfica' },
-  { name: 'Estado Civil', code: 'estadocivil', type: 'pie', title: 'Estado Civil' }
+  { name: 'Distribución por Carrera', code: 'MAJOR_DISTRIBUTION', type: 'pie', title: 'Distribución por Carrera' },
+  { name: 'Nivel Socioeconómico', code: 'ECONOMI_LEVEL', type: 'doughnut', title: 'Nivel Socioeconómico' },
+  { name: 'Becas Solicitadas', code: 'SCHOLARSHIPS_REQUESTED', type: 'bar', title: 'Becas Solicitadas' },
+  { name: 'Servicios en Hogar', code: 'HOUSEHOLD_SERVICES', type: 'radar', title: 'Servicios en Hogar' },
+  { name: 'Procedencia Geográfica', code: 'GEOGRAPHICAL_ORIGIN', type: 'bar', title: 'Procedencia Geográfica' },
+  { name: 'Estado Civil', code: 'CIVIL_STATE', type: 'pie', title: 'Estado Civil' }
 ])
 
 const datosGraficos = {
@@ -150,7 +155,7 @@ const createChartFromBackendData = async (backendResponse: any) => {
   if (!chartRef.value) return
   const ctx = chartRef.value.getContext('2d')
   if (!ctx) return
-  
+
   // Destruir gráfico existente si lo hay
   if (chartInstance.value) {
     chartInstance.value.destroy()
@@ -159,18 +164,47 @@ const createChartFromBackendData = async (backendResponse: any) => {
 
   console.log('Creando gráfico con datos del backend:', backendResponse)
 
-  // Extraer información directamente del backend
-  const chartData = backendResponse.datos || backendResponse.data // Los datos para graficar
-  const chartType = backendResponse.tipo || backendResponse.type   // Tipo del gráfico (pie, bar, etc.)
-  const chartTitle = backendResponse.titulo || backendResponse.title // Título del gráfico
-  
+  // Verificar si la respuesta tiene el formato esperado
+  if (!backendResponse.success) {
+    console.error('Error en la respuesta del backend:', backendResponse)
+    showErrorChart('Error al cargar los datos del servidor')
+    return
+  }
+
+  if (!backendResponse.data || !backendResponse.data.datos) {
+    console.error('Datos no encontrados en la respuesta:', backendResponse)
+    showErrorChart('Formato de datos incorrecto')
+    return
+  }
+
+  // Extraer información del nuevo formato
+  const chartData = backendResponse.data.datos // Array de objetos con label y value
+  const chartTitle = backendResponse.data.titulo // Título del gráfico
+
+  // Verificar que hay datos para mostrar
+  if (!Array.isArray(chartData) || chartData.length === 0) {
+    console.warn('No hay datos para mostrar en el gráfico')
+    showErrorChart('No hay datos disponibles para mostrar')
+    return
+  }
+
+  // Determinar el tipo de gráfico basado en el título o usar por defecto
+  let chartType = 'bar' // Tipo por defecto
+  if (chartTitle.includes('carrera') || chartTitle.includes('civil')) {
+    chartType = 'pie'
+  } else if (chartTitle.includes('socioeconomico')) {
+    chartType = 'doughnut'
+  } else if (chartTitle.includes('servicios')) {
+    chartType = 'radar'
+  }
+
   // Extraer labels y values de la respuesta del backend
-  const labels = chartData.map((item: any) => item.label || item.name)
-  const data = chartData.map((item: any) => item.value || item.count)
-  
+  const labels = chartData.map((item: any) => item.label)
+  const data = chartData.map((item: any) => item.value)
+
   // Colores por defecto
   const defaultColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E74C3C', '#C9CBCF']
-  
+
   const config: any = {
     type: chartType,
     data: {
@@ -201,7 +235,7 @@ const createChartFromBackendData = async (backendResponse: any) => {
       scales: chartType === 'bar' ? {
         y: { beginAtZero: true }
       } : chartType === 'radar' ? {
-        r: { beginAtZero: true, max: 100 }
+        r: { beginAtZero: true, max: Math.max(...data) * 1.2 }
       } : {}
     }
   }
@@ -211,10 +245,9 @@ const createChartFromBackendData = async (backendResponse: any) => {
     console.log(`Gráfico tipo '${chartType}' creado exitosamente con título: '${chartTitle}'`)
   } catch (error) {
     console.error('Error al crear gráfico con datos del backend:', error)
+    showErrorChart('Error al crear el gráfico')
   }
-}
-
-// Nueva función para manejar arrays directos como [{ name: "...", count: ... }]
+}// Nueva función para manejar arrays directos como [{ name: "...", count: ... }]
 const createChartFromDirectArray = async (dataArray: any[]) => {
   await nextTick()
   if (!chartRef.value) return
@@ -286,6 +319,70 @@ const createChartFromDirectArray = async (dataArray: any[]) => {
 const nextChart = async () => {
   currentChartIndex.value = (currentChartIndex.value + 1) % chartTypes.value.length
   await createChart()
+}
+
+// Función para mostrar gráfico de error
+const showErrorChart = async (errorMessage: string) => {
+  await nextTick()
+  if (!chartRef.value) return
+  const ctx = chartRef.value.getContext('2d')
+  if (!ctx) return
+
+  // Destruir gráfico existente si lo hay
+  if (chartInstance.value) {
+    chartInstance.value.destroy()
+    chartInstance.value = undefined
+  }
+
+  const config: any = {
+    type: 'bar',
+    data: {
+      labels: ['Error'],
+      datasets: [{
+        label: 'Error',
+        data: [1],
+        backgroundColor: ['#E74C3C'],
+        borderColor: ['#C0392B'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: {
+          display: true,
+          text: errorMessage,
+          font: { size: 16, weight: 'bold' },
+          color: '#E74C3C'
+        },
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 1,
+          ticks: {
+            display: false
+          }
+        },
+        x: {
+          ticks: {
+            display: false
+          }
+        }
+      }
+    }
+  }
+
+  try {
+    chartInstance.value = new Chart(ctx, config)
+    console.log('Gráfico de error mostrado:', errorMessage)
+  } catch (error) {
+    console.error('Error al mostrar gráfico de error:', error)
+  }
 }
 
 onMounted(async () => {
