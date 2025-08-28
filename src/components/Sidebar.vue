@@ -35,14 +35,14 @@
       </button>
 
       <div class="sidebar-header">
-        <div class="sae-logo">
+        <div class="unsis-logo">
           <img
-            src="/src/assets/sae-logo.png"
-            alt="SAE Logo"
-            class="sae-logo-img"
+            src="/src/assets/logo.png"
+            alt="Escudo de la Universidad de la Sierra Sur"
+            class="unsis-logo-img"
           />
         </div>
-        <h2 class="portal-title" v-show="!isCollapsed">PORTAL DE INSCRIPCIONES</h2>
+        <h2 class="portal-title" v-show="!isCollapsed">PORTAL DE ESTADISTICAS</h2>
       </div>
 
       <hr class="divider" />
@@ -318,14 +318,14 @@ onUnmounted(() => {
   color: var(--color-text, #275B3B);
 }
 
-.sae-logo {
+.unsis-logo {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 1rem;
 }
 
-.sae-logo-img {
+.unsis-logo-img {
   max-width: 120px;
   width: 100%;
   height: auto;
@@ -438,7 +438,7 @@ onUnmounted(() => {
     min-width: 250px;
   }
 
-  .sae-logo-img {
+  .unsis-logo-img {
     max-width: 100px;
   }
 
@@ -453,7 +453,7 @@ onUnmounted(() => {
   padding: 1rem 0.5rem;
 }
 
-.sidebar-collapsed .sae-logo-img {
+.sidebar-collapsed .unsis-logo-img {
   max-width: 40px;
 }
 
@@ -511,7 +511,7 @@ onUnmounted(() => {
     min-width: 200px;
   }
 
-  .sae-logo-img {
+  .unsis-logo-img {
     max-width: 80px;
   }
   

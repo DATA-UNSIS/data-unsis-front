@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { Icon } from '@iconify/vue'
 import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 
@@ -115,10 +116,10 @@ const generateChart = () => {
     <!-- Título Principal -->
     <div class="header-section">
       <h1 class="main-title">
-        Estadísticas UNSIS
+        Tablero Académico
       </h1>
       <h2 class="subtitle">
-        Sistema de Análisis de Datos Universitarios
+        Sistema de Análisis Universitario
       </h2>
     </div>
 
@@ -225,30 +226,25 @@ const generateChart = () => {
 .header-section {
   text-align: center;
   margin-bottom: 30px;
+  padding: 32px 24px;
+  border-radius: 12px;
   background: transparent;
-  padding: 0;
-  border: none;
-  background-color: #275B3B;
-  border-radius: 20px;
-  flex: content;
 }
 
 .main-title {
-  color: #efefef;
-  font-size: 2.5rem;
-  font-weight: normal;
-  margin-bottom: 10px;
-}
-
-.main-title i {
-  margin-right: 10px;
-  color: #efefef;
+  color: #275B3B;
+  font-size: 2.25rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
 }
 
 .subtitle {
-  color: #efefef;
-  font-size: 1.5rem;
+  color: #5F7D6F;
+  font-size: 1.125rem;
+  font-weight: 400;
   margin: 0;
+  letter-spacing: 0.25px;
 }
 
 /* Filters Section */
@@ -468,7 +464,7 @@ const generateChart = () => {
 }
 
 .generate-btn {
-  background: #275B3B;
+  background: #1b6b51;
   color: white;
   border: none;
   padding: 12px 30px;
@@ -482,13 +478,13 @@ const generateChart = () => {
 }
 
 .generate-btn:hover:not(:disabled) {
-  background: #1e4529;
+  background: #cfe9da;
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(39, 91, 59, 0.4);
 }
 
 .generate-btn:disabled {
-  background: #94a3a3;
+  background: #cfe9da;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
