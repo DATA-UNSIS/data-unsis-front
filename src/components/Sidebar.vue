@@ -63,7 +63,7 @@
           </li>
           
           <li class="nav-item">
-            <router-link to="/ayuda" class="nav-link" @click="handleMobileClick">
+            <router-link to="/alumnos/help" class="nav-link" @click="handleMobileClick">
               <Icon icon="mdi:help-circle" class="nav-icon" />
               <span class="nav-text" v-show="!isCollapsed">Ayuda</span>
             </router-link>
