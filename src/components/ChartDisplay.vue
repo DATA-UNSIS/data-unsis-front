@@ -455,7 +455,7 @@ if (import.meta.env.DEV) {
 }
 
 .rotate-btn {
-  background: #3498db;
+  background: #1b6b51;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -469,7 +469,7 @@ if (import.meta.env.DEV) {
 }
 
 .rotate-btn:hover {
-  background: #2980b9;
+  background: #1b6b51;
 }
 
 @media (max-width: 768px) {

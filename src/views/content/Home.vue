@@ -5,11 +5,11 @@ import Image from 'primevue/image'
 <template>
   <div class="home-container">
     <div class="logo-section">
-      <Image src="/src/assets/LogoUNSIS.png" alt="Logo de la Universidad" width="250" preview/>
+      <Image src="/src/assets/unsis-logo.png" alt="Escudo de la Universidad de la Sierra Sur" width="250" preview/>
     </div>
     <div class="welcome-content">
-      <h1>Bienvenido al Portal de Estadisticas</h1>
-      <p>Sistema de Estadisticas de estudio socioeconomico.</p>
+      <h1>Bienvenido al Portal de Estadísticas</h1>
+      <p>Sistema de Estadísticas del Estudio Socioeconómico.</p>
     </div>
   </div>
 </template>

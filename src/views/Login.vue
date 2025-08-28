@@ -14,7 +14,7 @@ function login() {
   <div class="login-card">
     <div class="login-form">
       <div class="logo">
-        <img src="/src/assets/sae-logo.png" alt="SAE Logo" />
+        <img src="/src/assets/logo.png" alt="Escudo de la Universidad de la Sierra Sur" />
       </div>
       
       <h2>PORTAL DE ESTADISTICAS</h2>
@@ -53,7 +53,7 @@ function login() {
     </div>
     
     <div class="login-image">
-      <img src="/src/assets/campus.png" alt="Campus SAE" />
+      <img src="/src/assets/campus.png" alt="Imagen animada del campus de la Universidad de la Sierra Sur" />
     </div>
   </div>
 </template>
