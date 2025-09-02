@@ -30,8 +30,7 @@ import Sidebar from '../components/Sidebar.vue';
   margin-bottom: 20px;
   padding: 30px;
   border-radius: 15px;
-  background-color: white;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  background-color: #4a7c59;
   overflow-y: auto;
   transition: margin-left 0.3s ease;
 }
