@@ -3,6 +3,7 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import Chart from 'primevue/chart';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
+import Dialog from 'primevue/dialog';
 import { Icon } from '@iconify/vue';
 import Card from 'primevue/card';
 
@@ -15,6 +16,16 @@ const props = defineProps({
 
 const selectedType = ref(props.type);
 const chartKey = ref(0);
+const isDialogVisible = ref(false);
+const dialogChartKey = ref(0);
+
+const openDialog = () => {
+  isDialogVisible.value = true;
+  // Forzar re-render del chart en el diálogo
+  nextTick(() => {
+    dialogChartKey.value++;
+  });
+};
 
 watch(selectedType, async () => {
   await nextTick();
@@ -92,6 +103,62 @@ const chartOptions = computed(() => ({
     arc: { borderWidth: 1, borderColor: '#fff' }
   } : {}
 }));
+
+// Opciones del chart para el dialog
+const dialogChartOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  devicePixelRatio: window.devicePixelRatio || 1,
+  animation: {
+    duration: 1000,
+    easing: 'easeInOutQuart',
+    animateRotate: selectedType.value === 'pie' || selectedType.value === 'doughnut',
+    animateScale: selectedType.value === 'pie' || selectedType.value === 'doughnut'
+  },
+  interaction: { intersect: false, mode: 'index' },
+  layout: { padding: { top: 20, bottom: 20, left: 20, right: 20 } },
+  plugins: {
+    legend: {
+      position: selectedType.value === 'bar' ? 'top' : 'bottom',
+      display: true,
+      labels: {
+        boxWidth: 15,
+        font: { size: 14, family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' },
+        usePointStyle: true,
+        padding: 15
+      }
+    },
+    tooltip: {
+      enabled: true,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      titleFont: { size: 16 },
+      bodyFont: { size: 14 },
+      padding: 12,
+      cornerRadius: 6
+    }
+  },
+  scales: selectedType.value === 'bar' || selectedType.value === 'line' ? {
+    y: {
+      beginAtZero: true,
+      grid: { color: 'rgba(0, 0, 0, 0.1)', lineWidth: 1 },
+      ticks: { 
+        font: { size: 12, family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' },
+        maxTicksLimit: 8
+      }
+    },
+    x: {
+      grid: { display: false },
+      ticks: { 
+        font: { size: 12, family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' },
+        maxRotation: 45,
+        minRotation: 0
+      }
+    }
+  } : {},
+  elements: selectedType.value === 'pie' || selectedType.value === 'doughnut' ? {
+    arc: { borderWidth: 2, borderColor: '#fff' }
+  } : {}
+}));
 </script>
 
 <template>
@@ -105,7 +172,7 @@ const chartOptions = computed(() => ({
             </div>
         </template>
         <template #content>
-            <div class="chart-container">
+            <div class="chart-container" @click="openDialog">
                 <Chart 
                     :key="chartKey"
                     :type="selectedType" 
@@ -132,13 +199,32 @@ const chartOptions = computed(() => ({
             </div>
         </template>
     </Card>
+
+    <!-- Diálogo con la gráfica mas grande -->
+    <Dialog 
+        v-model:visible="isDialogVisible" 
+        :header="title"
+        modal
+        :style="{ width: '90vw', maxWidth: '1000px' }"
+        :dismissable-mask="true"
+        :closable="true"
+        class="chart-dialog"
+    >
+        <div class="dialog-chart-container">
+            <Chart 
+                :key="dialogChartKey"
+                :type="selectedType" 
+                :data="chartData" 
+                :options="dialogChartOptions" 
+            />
+        </div>
+    </Dialog>
 </template>
 
 <style scoped>
 .chart-card {
   height: 100%;
   width: 100%;
-  /* Optimizaciones para prevenir borrosidad */
   transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
@@ -149,7 +235,6 @@ const chartOptions = computed(() => ({
   height: 100%;
   display: flex;
   flex-direction: column;
-  /* Optimización para renderizado */
   will-change: transform;
   image-rendering: crisp-edges;
 }
@@ -211,6 +296,12 @@ const chartOptions = computed(() => ({
   flex: 1;
   transform: translateZ(0);
   will-change: transform;
+  cursor: pointer; 
+  transition: opacity 0.2s ease;
+}
+
+.chart-container:hover {
+  opacity: 0.9;
 }
 
 .chart-container :deep(canvas) {
@@ -244,7 +335,6 @@ const chartOptions = computed(() => ({
   display: flex !important;
 }
 
-/* Asegurar que el contenedor del chart esté centrado */
 .chart-container :deep(.p-chart > div) {
   width: 100% !important;
   height: auto !important;
@@ -330,6 +420,58 @@ hr {
 @media (min-resolution: 2dppx) {
   .chart-container :deep(canvas) {
     image-rendering: auto;
+  }
+}
+
+/* Estilos para el diálogo */
+.chart-dialog :deep(.p-dialog-content) {
+  padding: 1rem;
+}
+
+.dialog-chart-container {
+  width: 100%;
+  height: 60vh;
+  min-height: 400px;
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.dialog-chart-container :deep(.p-chart) {
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1;
+  display: flex !important;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+.dialog-chart-container :deep(.p-chart > div) {
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1 !important;
+  display: flex !important;
+}
+
+.dialog-chart-container :deep(canvas) {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  image-rendering: auto;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+@media (max-width: 768px) {
+  .chart-dialog {
+    width: 95vw !important;
+  }
+  
+  .dialog-chart-container {
+    height: 50vh;
+    min-height: 300px;
   }
 }
 </style>
