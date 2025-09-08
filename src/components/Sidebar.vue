@@ -1,162 +1,105 @@
 <template>
-  <!-- Botón de toggle para móviles (fuera del sidebar) -->
-  <button 
-    v-if="isMobile && isMobileHidden" 
-    class="mobile-hamburger" 
-    @click="toggleMobileSidebar"
-  >
-    <Icon icon="mdi:menu" />
-  </button>
-
-  <!-- Overlay para móviles -->
-  <div 
-    v-if="isMobile" 
-    class="sidebar-overlay" 
-    :class="{ 'show': !isMobileHidden }" 
-    @click="hideMobileSidebar"
-  ></div>
-
-  <aside 
-    class="sidebar" 
-    :class="{ 
-      'sidebar-collapsed': isCollapsed, 
-      'sidebar-mobile-hidden': isMobile && isMobileHidden 
-    }"
+  <div
+    class="sidebar"
   >
     <!-- Contenido del sidebar -->
-    <div class="sidebar-content">
-      <!-- Botón de colapsar para desktop -->
-      <button 
-        v-if="!isMobile"
-        class="sidebar-toggle desktop-only" 
-        @click="toggleCollapse"
-      >
-        <Icon :icon="isCollapsed ? 'mdi:menu' : 'mdi:menu-open'" />
-      </button>
-
-      <div class="sidebar-header">
-        <div class="unsis-logo">
-          <img
-            src="/src/assets/logo.png"
-            alt="Escudo de la Universidad de la Sierra Sur"
-            class="unsis-logo-img"
-          />
-        </div>
-        <h2 class="portal-title" v-show="!isCollapsed">PORTAL DE ESTADISTICAS</h2>
-      </div>
-
+    <div class="sidebar-content border-t-indigo-500">
       <hr class="divider" />
 
       <nav class="sidebar-nav">
         <ul class="nav-list">
           <li class="nav-item">
-            <router-link to="/alumnos" class="nav-link" @click="handleMobileClick">
-              <Icon icon="mdi:home" class="nav-icon" />
-              <span class="nav-text" v-show="!isCollapsed">Inicio</span>
+            <router-link to="/alumnos" class="nav-link">
+              <Icon icon="fa7-regular:home" class="nav-icon" />
+              <div class="grid grid-rows-2">
+                <span class="nav-text">Inicio</span>
+                <span class="nav-subtext">Inicio</span>
+              </div>
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/alumnos/fichas" class="nav-link" @click="handleMobileClick">
-              <Icon icon="mdi:chart-bar" class="nav-icon" />
-              <span class="nav-text" v-show="!isCollapsed">Estadisticas Generales</span>
+            <router-link to="/alumnos/datos-demograficos" class="nav-link">
+              <Icon icon="mdi:people" class="nav-icon"/>
+              <div class="grid grid-rows-2">
+                <span class="nav-text block">Datos Demográficos</span>
+                <span class="nav-subtext">Distribución por sexo, edad, estado civil, etc.</span>
+              </div>
+            </router-link>
+          </li>          
+          <li class="nav-item">
+            <router-link to="/alumnos/distribucion-geografica" class="nav-link">
+              <Icon icon="streamline-plump:world-remix" class="nav-icon"/>
+              <div class="grid grid-rows-2">
+                <span class="nav-text">Distribución Geográfica</span>
+                <span class="nav-subtext">Procedencia por entidad o municipio.</span>
+              </div>
             </router-link>
           </li>
-          
           <li class="nav-item">
-            <router-link to="/alumnos/help" class="nav-link" @click="handleMobileClick">
+            <router-link to="/alumnos/formacion-academica" class="nav-link">
+              <Icon icon="icon-park-outline:bachelor-cap" class="nav-icon"/>
+              <div class="grid grid-rows-2">
+                <span class="nav-text">Formación Academica</span>
+                <span class="nav-subtext">Trayectoria y rendimiento estudiantil.</span>
+              </div>
+            </router-link>
+          </li>
+         <li class="nav-item">
+            <router-link to="/alumnos/informacion-socioeconomica" class="nav-link">
+              <Icon icon="hugeicons:money-bag-02" class="nav-icon"/>
+              <div class="grid grid-rows-2">
+                <span class="nav-text">Información Socioeconómica</span>
+                <span class="nav-subtext">Ingresos, becas, servicios del hogar.</span>
+              </div>
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/alumnos/preguntas-personalizadas" class="nav-link">
+              <Icon icon="mdi:head-question-outline" class="nav-icon"/>
+              <div class="grid grid-rows-2">
+                <span class="nav-text">Preguntas Personalizadas</span>
+                <span class="nav-subtext">Respuestas del cuestionario específico.</span>
+              </div>
+            </router-link>
+          </li>          
+          <li class="nav-item">
+            <router-link to="/alumnos/ayuda" class="nav-link">
               <Icon icon="mdi:help-circle" class="nav-icon" />
-              <span class="nav-text" v-show="!isCollapsed">Ayuda</span>
+              <div class="grid grid-rows-2">
+                <span class="nav-text">Ayuda</span>
+                <span class="nav-subtext">Ayuda.</span>
+              </div>
             </router-link>
           </li>
         </ul>
       </nav>
 
-      <hr class="divider" />
 
       <div class="options-section">
-        <h3 class="options-title" v-show="!isCollapsed">Opciones</h3>
+        <h3 class="options-title">Opciones</h3>
         <ul class="nav-list">
           <li class="nav-item">
             <button class="nav-link logout-btn" @click="logout">
-              <Icon icon="mdi:logout" class="nav-icon" />
-              <span class="nav-text" v-show="!isCollapsed">Cerrar Sesión</span>
+              <Icon icon="basil:logout-outline" class="nav-icon" />
+              <span class="nav-text">Cerrar Sesión</span>
             </button>
           </li>
         </ul>
       </div>
     </div>
-  </aside>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
 import { Icon } from "@iconify/vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-// Estados reactivos
-const isCollapsed = ref(false)
-const isMobileHidden = ref(false) // Inicializar como visible
-const isMobile = ref(false)
-
-// Detectar si es móvil
-const checkMobile = () => {
-  const wasMobile = isMobile.value
-  isMobile.value = window.innerWidth <= 768
-  
-  // Solo cambiar estado si cambió el tipo de dispositivo
-  if (!wasMobile && isMobile.value) {
-    // Cambió a móvil: ocultar sidebar
-    isMobileHidden.value = true
-  } else if (wasMobile && !isMobile.value) {
-    // Cambió a desktop: mostrar sidebar
-    isMobileHidden.value = false
-  }
-}
-
-// Funciones
-const toggleCollapse = () => {
-  isCollapsed.value = !isCollapsed.value
-}
-
-const toggleMobileSidebar = () => {
-  isMobileHidden.value = !isMobileHidden.value
-}
-
-const hideMobileSidebar = () => {
-  if (isMobile.value) {
-    isMobileHidden.value = true
-  }
-}
-
-const handleMobileClick = () => {
-  if (isMobile.value) {
-    isMobileHidden.value = true
-  }
-}
-
 const logout = () => {
   console.log("Logout clicked");
   router.push("/login");
-  if (isMobile.value) {
-    isMobileHidden.value = true
-  }
 };
-
-// Lifecycle
-onMounted(() => {
-  // Detectar el tipo de dispositivo al inicio
-  isMobile.value = window.innerWidth <= 768
-  isMobileHidden.value = isMobile.value // Oculto solo en móvil
-  
-  checkMobile()
-  window.addEventListener('resize', checkMobile)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile)
-})
 </script>
 
 
@@ -166,33 +109,20 @@ onUnmounted(() => {
 
 <style scoped>
 .sidebar {
-  width: 250px;
+  width: 320px;
   min-width: 250px;
-  height: 100vh;
+  height: 100%;
   background: #ffffff;
   border-right: 2px solid #13442A;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
-  position: fixed;
+  position: relative;
   left: 0;
   top: 0;
   z-index: 1000;
   transition: all 0.3s ease;
-}
-
-/* Estados del sidebar */
-.sidebar-collapsed {
-  width: 70px;
-  min-width: 70px;
-}
-
-/* Solo aplicar hide en móviles */
-@media (max-width: 768px) {
-  .sidebar-mobile-hidden {
-    transform: translateX(-100%);
-  }
 }
 
 /* Contenido del sidebar */
@@ -200,90 +130,6 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-}
-
-/* Botón hamburguesa móvil independiente */
-.mobile-hamburger {
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  background: var(--color-primary, #4a7c59);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 1002;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.mobile-hamburger:hover {
-  background: var(--color-primary-dark, #3a5c49);
-  transform: scale(1.05);
-}
-
-/* Botón de toggle dentro del sidebar */
-.sidebar-toggle {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: var(--color-primary, #4a7c59);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  width: 35px;
-  height: 35px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 1001;
-  transition: all 0.3s ease;
-}
-
-.sidebar-toggle:hover {
-  background: var(--color-primary-dark, #3a5c49);
-  transform: scale(1.05);
-}
-
-/* Mostrar/ocultar botones según dispositivo */
-.mobile-only {
-  display: none;
-}
-
-.desktop-only {
-  display: flex;
-}
-
-/* En desktop, ocultar hamburguesa móvil */
-@media (min-width: 769px) {
-  .mobile-hamburger {
-    display: none;
-  }
-}
-
-/* Overlay para móviles */
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.sidebar-overlay.show {
-  opacity: 1;
-  visibility: visible;
 }
 
 .sidebar-header {
@@ -342,13 +188,6 @@ onUnmounted(() => {
   word-wrap: break-word;
 }
 
-.divider {
-  border: none;
-  height: 1px;
-  background: var(--color-tertiary, #5F7D6F);
-  margin: 1rem 0;
-}
-
 .sidebar-nav {
   flex: 1;
   padding: 0;
@@ -363,7 +202,6 @@ onUnmounted(() => {
 }
 
 .nav-item {
-  margin-bottom: 0.5rem;
 }
 
 .nav-link {
@@ -396,12 +234,20 @@ onUnmounted(() => {
 .nav-icon {
   font-size: 1.25rem;
   margin-right: 0.75rem;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 33px;
+  height: 33px;
 }
 
 .nav-text {
-  font-weight: 500;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-subtext {
+  font-size: 0.75rem;
+  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -488,10 +334,6 @@ onUnmounted(() => {
     z-index: 1001;
     width: 280px;
     min-width: 280px;
-  }
-  
-  .sidebar:not(.sidebar-mobile-hidden) {
-    transform: translateX(0);
   }
   
   .nav-link {

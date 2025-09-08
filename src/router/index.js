@@ -32,16 +32,36 @@ const routes = [
         name: 'Home',
         component: Home
       },
-      // Ruta para mostrar el componente Fichas
+      // Ruta para mostrar el componente Datos Demográficos
       {
-        path: 'fichas',
-        name: 'Graficos',
+        path: 'datos-demograficos',
+        name: 'Datos Demograficos',
         component: Grafics
       },
-       // Ruta para mostrar el componente Help
       {
-        path: 'help',
-        name: 'Help',
+        path: 'distribucion-geografica',
+        name: 'Distribucion Geografica',
+        component: Grafics
+      },
+      {
+        path: 'formacion-academica',
+        name: 'Formacion Academica',
+        component: Grafics
+      },
+      {
+        path: 'informacion-socioeconomica',
+        name: 'Informacion Socioeconomica',
+        component: Grafics
+      },
+      {
+        path: 'preguntas-personalizadas',
+        name: 'Preguntas Personalizadas',
+        component: Grafics
+      },
+       // Ruta para mostrar el componente Ayuda
+      {
+        path: 'ayuda',
+        name: 'Ayuda',
         component: Help
       }
     ]
