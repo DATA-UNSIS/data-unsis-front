@@ -3,26 +3,17 @@ import ayuda from '../../components/HelpCharts.vue'
 </script>
 
 <template>
-  <div>
+  <div class="help-container">
     <ayuda />
   </div>
 </template>
 
 <style scoped>
 .help-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  text-align: center;
-  gap: 2rem;
-}
-
-@media (max-width: 480px) {
-  .help-container {
-    gap: 1.5rem;
-    min-height: 50vh;
-  }
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 </style>

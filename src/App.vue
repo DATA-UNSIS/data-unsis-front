@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="bg-green-800 h-screen flex flex-col">
     <!-- Usamos router-view para mostrar los componentes según la ruta -->
     <router-view />
   </div>

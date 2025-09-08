@@ -62,12 +62,13 @@ const getImage = (type) => {
 
 <style scoped>
 .help-charts {
-  max-width: 700px;
-  margin: auto;
+  width: 100%;
   font-family: 'Montserrat', Arial, sans-serif;
-  background: #fff;
   color: #275B3B;
-  padding: 1rem;
+  background-color: white;
+  border-radius: 30px;
+  padding: 0;
+  margin: 0;
   box-sizing: border-box;
 }
 
@@ -99,7 +100,6 @@ const getImage = (type) => {
 
 .chart-section {
   margin-bottom: 2rem;
-  border-bottom: 1px solid #c8e6c9;
   padding-bottom: 1rem;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
