@@ -17,7 +17,7 @@ const majorsToUse = computed(() => {
 const semestersToUse = computed(() => {
   return props.semesters && props.semesters.length > 0 
     ? props.semesters 
-    : ["Primero", "Segundo", "Tercero", "Cuarto", "Quinto", "Sexto", "Séptimo", "Octavo", "Noveno", "Décimo", "Onceavo", "Doceavo"];
+    : ["Curso Propedéutico", "Primero", "Segundo", "Tercero", "Cuarto", "Quinto", "Sexto", "Séptimo", "Octavo", "Noveno", "Décimo", "Undécimo", "Duodécimo"];
 });
 
 const titlesToUse = computed(() => {

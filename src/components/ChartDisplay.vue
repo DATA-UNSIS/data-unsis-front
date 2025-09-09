@@ -148,19 +148,6 @@ const createChart = async () => {
     console.error('Error al crear gráfico:', error)
   }
 }
-
-// Nueva función para crear gráficos con datos del backend
-// Formato esperado del JSON:
-// {
-//   "success": true,
-//   "data": {
-//     "titulo": "MAJOR_DISTRIBUTION", // Código del gráfico (se usa para buscar en chartTypes)
-//     "datos": [
-//       { "label": "Texto", "value": 45 },
-//       { "label": "Texto2", "value": 30 }
-//     ]
-//   }
-// }
 // El título del gráfico se toma de la propiedad "title" del chartType correspondiente
 const createChartFromBackendData = async (backendResponse: any) => {
   await nextTick()
