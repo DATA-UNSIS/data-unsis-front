@@ -1,45 +1,161 @@
 <script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import Button from 'primevue/button'
 import graficasPosibles from './graficasPosibles.js'
 import ChartCard from '../../components/ChartCard.vue'
+import { statsApi } from '../../services/statsApi.js'
+
+let response = null;
+// Usar los props recibidos, pero mantener valores por defecto si no se reciben
+const majorsToUse = computed(() => {
+  return props.majors && props.majors.length > 0 
+    ? props.majors 
+    : ["Licenciatura en Administración Municipal", "Licenciatura en Administración Pública", "Licenciatura en Ciencias Biomédicas", "Licenciatura en Ciencias Empresariales",
+       "Licenciatura en Enfermería", "Licenciatura en Informática", "Licenciatura en Medicina", "Licenciatura en Nutrición", "Licenciatura en Odontología"];
+});
+
+const semestersToUse = computed(() => {
+  return props.semesters && props.semesters.length > 0 
+    ? props.semesters 
+    : ["Primero", "Segundo", "Tercero", "Cuarto", "Quinto", "Sexto", "Séptimo", "Octavo", "Noveno", "Décimo", "Onceavo", "Doceavo"];
+});
+
+const titlesToUse = computed(() => {
+  return props.titles && props.titles.length > 0 
+    ? props.titles 
+    : Object.keys(graficasPosibles.Demografic_Grafics);
+});
+
+
+// Variables reactivas para manejar múltiples gráficos
+const chartDataList = ref([]);
+async function dataBackend () {
+  console.log('Enviando datos al backend...', titlesToUse.value, majorsToUse.value, semestersToUse.value, props.sexo);
+  response = await statsApi.getChartData(titlesToUse.value, majorsToUse.value, semestersToUse.value, props.sexo)
+  separateResponse()
+}
+
+const props = defineProps({
+  majors: {
+    type: Array,
+    default: () => []
+  },
+  semesters: {
+    type: Array,
+    default: () => []
+  },
+  sexo: {
+    type: String,
+    default: null
+  },
+  titles: {
+    type: Array,
+    default: () => []
+  }
+})
+
+// Watcher para detectar cambios en los filtros y actualizar los datos automáticamente
+watch([() => props.majors, () => props.semesters, () => props.sexo], () => {
+  console.log('Filtros cambiaron, actualizando datos...');
+  dataBackend();
+}, { deep: true });
+
+// Ejecutar al montar el componente si hay filtros o usar los valores por defecto
+onMounted(() => {
+  console.log('Componente montado, cargando datos iniciales...');
+  dataBackend();
+});
+
+function separateResponse() {
+  const data = response.data;
+  const newChartList = [];
+  
+  data.results.forEach(element => {
+    // Busca el ENUM correspondiente al título en todas las categorías
+    let enumProps = null;
+    
+    // Buscar en todas las categorías disponibles
+    const allCategories = [
+      graficasPosibles.Demografic_Grafics,
+      graficasPosibles.Geografic_Distribution, 
+      graficasPosibles.Academic_Formation,
+      graficasPosibles.Socioeconomic_Information,
+      graficasPosibles.Personalizated_Questions
+    ];
+    
+    for (const category of allCategories) {
+      if (category[element.title]) {
+        enumProps = category[element.title];
+        break;
+      }
+    }
+    
+    // Si no se encuentra la configuración, usar valores por defecto
+    if (!enumProps) {
+      console.log(`No se encontró configuración para el elemento: ${element.title}`);
+      enumProps = {
+        title: element.title,
+        type: 'bar',
+        possibleGrafics: ['bar', 'pie', 'doughnut', 'line'],
+        backgroundColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+        borderColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+      };
+    }
+    
+    // Extraer las claves (strings) del objeto data
+    const labels = Object.keys(element.data); 
+    const values = Object.values(element.data); 
+
+    const chartData = {
+      labels: labels,
+      datasets: [{
+        label: enumProps.title,
+        data: values,
+        backgroundColor: enumProps.backgroundColors,
+        borderColor: enumProps.borderColors,
+        borderWidth: 1
+      }]
+    };
+    
+    // objeto especial para los datos de un grafico
+    const chartInfo = {
+      id: element.title,
+      title: enumProps.title,
+      chartData: chartData,
+      type: enumProps.type,
+      possibleTypes: enumProps.possibleGrafics?.map(type => ({ 
+        name: getTypeDisplayName(type), 
+        value: type 
+      })) || []
+    };
+    
+    newChartList.push(chartInfo);
+  });
+  
+  chartDataList.value = newChartList;
+}
+
+// Función auxiliar para obtener nombres de display amigables
+function getTypeDisplayName(type) {
+  const typeMap = {
+    'bar': 'Gráfico de Barras',
+    'pie': 'Gráfico de Pastel', 
+    'doughnut': 'Gráfico de Dona',
+    'line': 'Gráfico de Líneas'
+  };
+  return typeMap[type] || type;
+}
 </script>
 
 <template>
     <div class="content-container">
-      <ChartCard
-        title="Distribución por Sexo"
-        :chartData="graficasPosibles.estudiantesData"
-        type="doughnut"
-        :posibleTypes="graficasPosibles.tiposGrafico"
-      />
-      <ChartCard
-        title="Distribución por Estado Civil"
-        :chartData="graficasPosibles.estudiantesData"
-        type="pie"
-        :posibleTypes="graficasPosibles.tiposGrafico"
-      />
-      <ChartCard
-        title="Distribución por Semestre"
-        :chartData="graficasPosibles.estudiantesData"
-        type="bar"
-        :posibleTypes="graficasPosibles.tiposGrafico"
-      />
-      <ChartCard
-        title="Distribución por Carreras"
-        :chartData="graficasPosibles.estudiantesData"
-        type="bar"
-        :posibleTypes="graficasPosibles.tiposGrafico"
-      />
-      <ChartCard
-        title="Distribución por Edad"
-        :chartData="graficasPosibles.estudiantesData"
-        type="line"
-        :posibleTypes="graficasPosibles.tiposGrafico"
-      />
-      <ChartCard
-        title="Distribución por Edad"
-        :chartData="graficasPosibles.estudiantesData"
-        type="line"
-        :posibleTypes="graficasPosibles.tiposGrafico"
+      <ChartCard 
+        v-for="chart in chartDataList" 
+        :key="chart.id"
+        :title="chart.title"
+        :chartData="chart.chartData"
+        :type="chart.type"
+        :posibleTypes="chart.possibleTypes"
       />
     </div>
 </template>

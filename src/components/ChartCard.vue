@@ -234,7 +234,6 @@ const dialogChartOptions = computed(() => ({
 .chart-card :deep(.p-card) {
   height: 100%;
   display: flex;
-  flex-direction: column;
   will-change: transform;
   image-rendering: crisp-edges;
 }

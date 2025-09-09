@@ -1,32 +1,31 @@
 <script setup lang="ts">
-import {ref, watch} from "vue";
+import {ref, watch, onMounted} from "vue";
 import {Icon} from "@iconify/vue";
 import MultiSelect from 'primevue/multiselect';
 import Button from 'primevue/button';
 
-const selectedDegree = ref(null);
-const selectedCarrera = ref(null);
 const degreeOptions = [];
 
 // Opciones para los dropdowns
 const carreras = ref([
-  {name: 'Licenciatura en Administración Municipal', code: 'LAM'},
-  {name: 'Licenciatura en Administración Pública', code: 'LAP'},
-  {name: 'Licenciatura en Ciencias Biomédicas', code: 'LCB'},
-  {name: 'Licenciatura en Ciencias Empresariales', code: 'LCE'},
-  {name: 'Licenciatura en Enfermería', code: 'LEN'},
-  {name: 'Licenciatura en Informática', code: 'LIN'},
-  {name: 'Licenciatura en Medicina', code: 'LME'},
-  {name: 'Licenciatura en Nutrición', code: 'LNU'},
-  {name: 'Licenciatura en Odontología', code: 'LOD'},
-  {name: 'Maestría en Administración Universitaria', code: 'MAU'},
-  {name: 'Maestría en Gobierno Electrónico', code: 'MGE'},
-  {name: 'Maestría en Planeación Estratégica Municipal', code: 'MPE'},
-  {name: 'Maestría en Salud Pública', code: 'MSP'},
-  {name: 'Doctorado en Gobierno Electrónico', code: 'DGE'}
+  "Licenciatura en Administración Municipal",
+  "Licenciatura en Administración Pública",
+  "Licenciatura en Ciencias Biomédicas",
+  "Licenciatura en Ciencias Empresariales",
+  "Licenciatura en Enfermería",
+  "Licenciatura en Informática",
+  "Licenciatura en Medicina",
+  "Licenciatura en Nutrición",
+  "Licenciatura en Odontología",
+  "Maestría en Administración Universitaria",
+  "Maestría en Gobierno Electrónico",
+  "Maestría en Planeación Estratégica Municipal",
+  "Maestría en Salud Pública",
+  "Doctorado en Gobierno Electrónico" 
 ]);
 
 const semestres = ref([
+  'Curso Propedéutico',
   'Primero',
   'Segundo',
   'Tercero',
@@ -41,15 +40,50 @@ const semestres = ref([
   'Duodécimo'
 ]);
 
+const selectedCarrera = ref([...carreras.value]);
+const selectedDegree = ref([...semestres.value]);
+
+// emit para enviar filtros
+const emit = defineEmits<{
+  filtersChanged: [filters: { carreras: string[], semestres: string[] }]
+}>();
+
+// Función para emitir los filtros
+const emitFilters = () => {
+  const carrerasToEmit = selectedCarrera.value.length === carreras.value.length 
+    ? null 
+    : selectedCarrera.value;
+  
+  const semestresToEmit = selectedDegree.value.length === semestres.value.length 
+    ? null 
+    : selectedDegree.value;
+
+  emit('filtersChanged', {
+    carreras: carrerasToEmit,
+    semestres: semestresToEmit,
+    sexo: null
+  });
+  console.log("Datos emitidos:", {
+    carreras: carrerasToEmit,
+    semestres: semestresToEmit,
+    sexo: null
+  });
+};
+
 watch(selectedDegree, (newVal) => {
   console.log('Semestre seleccionado:', newVal);
+  emitFilters();
 });
 
 watch(selectedCarrera, (newVal) => {
   console.log('Carrera seleccionada:', newVal);
-  const carrera = carreras.value.find(c => c.name === newVal);
+  emitFilters();
 });
 
+// Emitir filtros iniciales cuando el componente se monta
+onMounted(() => {
+  emitFilters();
+});
 
 const prop = defineProps<{
     isStart: boolean;
@@ -71,9 +105,6 @@ const prop = defineProps<{
           <MultiSelect
             v-model="selectedCarrera"
             :options="carreras"
-            optionLabel="name"
-            optionValue="name"
-            
             :class="['text-black','','', 'w-full', '!ml-3.5', '!mb-3.5', '!shadow-md','max-md:w-16']"
             size="small"
             display="chip"

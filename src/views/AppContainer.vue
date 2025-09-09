@@ -3,9 +3,17 @@ import { ref, onMounted } from 'vue';
 import { Icon } from '@iconify/vue';
 import Sidebar from '../components/Sidebar.vue';
 import DataUnsisHeader from "../components/Data-Unsis-Header.vue";
+import { header } from '@primeuix/themes/aura/accordion';
 
 // Estado reactivo para controlar la visibilidad del sidebar
 const isSidebarVisible = ref(true);
+
+// Estado reactivo para los filtros
+const filters = ref({
+  carreras: null as string[] | null,
+  semestres: null as string[] | null,
+  sexo: null as string | null
+});
 
 // Función para toggle del sidebar
 const toggleSidebar = () => {
@@ -19,6 +27,12 @@ onMounted(() => {
     isSidebarVisible.value = false;
   }
 });
+
+const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[] | null; sexo: string | null }) => {
+  console.log("Filtros recibidos en AppContainer:", newFilters);
+  filters.value = newFilters;
+};
+
 </script>
 
 <template>
@@ -29,7 +43,7 @@ onMounted(() => {
       <button @click="toggleSidebar" class="sidebar-toggle-btn max-md:size-8">
         <Icon :icon="isSidebarVisible ? 'mdi:menu-open' : 'mdi:menu'" />
       </button>
-      <DataUnsisHeader :is-start="true"/>
+      <DataUnsisHeader :is-start="true" @filters-changed="headerEmit"/>
     </header>
 
     <!-- Sidebar -->
@@ -39,8 +53,12 @@ onMounted(() => {
 
     <!-- Main Content -->
     <main class="main-content-area">
-      
-        <router-view/>
+        <router-view 
+          :key="$route.fullPath"
+          :majors="filters.carreras" 
+          :semesters="filters.semestres"
+          :sexo="filters.sexo"
+        />
     </main>
 
     <!-- Footer -->
