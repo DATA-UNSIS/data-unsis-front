@@ -168,7 +168,7 @@ function getTypeDisplayName(type) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1.5rem;
-  background-color: #4a7c59;
+  background-color: #2D6849;
   min-height: 100vh;
   image-rendering: crisp-edges;
   -webkit-font-smoothing: antialiased;
@@ -177,11 +177,13 @@ function getTypeDisplayName(type) {
 
 .content-container :deep(.chart-card) {
   min-height: 350px;
+  max-height: 450px;
   height: auto;
   width: 100%;
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
+  overflow: hidden;
 }
 
 .content-container :deep(.p-card) {

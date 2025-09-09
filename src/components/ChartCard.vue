@@ -18,6 +18,7 @@ const selectedType = ref(props.type);
 const chartKey = ref(0);
 const isDialogVisible = ref(false);
 const dialogChartKey = ref(0);
+const chartContainerRef = ref(null);
 
 const openDialog = () => {
   isDialogVisible.value = true;
@@ -51,8 +52,9 @@ onUnmounted(() => {
 
 const chartOptions = computed(() => ({
   responsive: true,
-  maintainAspectRatio: false,
-  devicePixelRatio: window.devicePixelRatio || 1,
+  maintainAspectRatio: true,
+  aspectRatio: selectedType.value === 'pie' || selectedType.value === 'doughnut' ? 1 : 2,
+  devicePixelRatio: Math.max(window.devicePixelRatio || 1, 2), // Mínimo 2x para mejor calidad
   animation: {
     duration: 1000,
     easing: 'easeInOutQuart',
@@ -107,8 +109,9 @@ const chartOptions = computed(() => ({
 // Opciones del chart para el dialog
 const dialogChartOptions = computed(() => ({
   responsive: true,
-  maintainAspectRatio: false,
-  devicePixelRatio: window.devicePixelRatio || 1,
+  maintainAspectRatio: true,
+  aspectRatio: selectedType.value === 'pie' || selectedType.value === 'doughnut' ? 1.2 : 2.5,
+  devicePixelRatio: Math.max(window.devicePixelRatio || 1, 3), // Máxima calidad para el diálogo
   animation: {
     duration: 1000,
     easing: 'easeInOutQuart',
@@ -159,6 +162,60 @@ const dialogChartOptions = computed(() => ({
     arc: { borderWidth: 2, borderColor: '#fff' }
   } : {}
 }));
+
+function exportChartPNG() {
+  // Buscar el canvas específicamente dentro de este componente
+  const chartElement = chartContainerRef.value?.querySelector('canvas');
+  if (chartElement) {
+    // Crear un canvas temporal 
+    const originalCanvas = chartElement;
+    const scaleFactor = 4;
+    // Crear canvas temporal de alta resolución
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    // Configurar el canvas temporal con mayor resolución
+    tempCanvas.width = originalCanvas.width * scaleFactor;
+    tempCanvas.height = originalCanvas.height * scaleFactor;
+    // Configurar el contexto para renderizado de alta calidad
+    tempCtx.imageSmoothingEnabled = false;
+    tempCtx.webkitImageSmoothingEnabled = false;
+    tempCtx.mozImageSmoothingEnabled = false;
+    tempCtx.msImageSmoothingEnabled = false;
+    tempCtx.scale(scaleFactor, scaleFactor); 
+    tempCtx.drawImage(originalCanvas, 0, 0);
+    const link = document.createElement('a');
+    link.href = tempCanvas.toDataURL('image/png', 1.0);
+    link.download = `${props.title.replace(/\s+/g, '_').toLowerCase()}_hq.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
+
+// Exportar grafico del dialog
+function exportDialogChartPNG() {
+  const chartElement = document.querySelector(`.dialog-chart-container canvas`);
+  if (chartElement) {
+    const originalCanvas = chartElement;
+    const scaleFactor = 6;
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = originalCanvas.width * scaleFactor;
+    tempCanvas.height = originalCanvas.height * scaleFactor;
+    tempCtx.imageSmoothingEnabled = false;
+    tempCtx.webkitImageSmoothingEnabled = false;
+    tempCtx.mozImageSmoothingEnabled = false;
+    tempCtx.msImageSmoothingEnabled = false
+    tempCtx.scale(scaleFactor, scaleFactor);
+    tempCtx.drawImage(originalCanvas, 0, 0);
+    const link = document.createElement('a');
+    link.href = tempCanvas.toDataURL('image/png', 1.0);
+    link.download = `${props.title.replace(/\s+/g, '_').toLowerCase()}_ultra_hq.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
 </script>
 
 <template>
@@ -166,13 +223,13 @@ const dialogChartOptions = computed(() => ({
         <template #header>
             <div class="chart-header">
                 <span class="chart-title">{{ title }}</span>
-                <Button aria-label="Download" size="small" text>
+                <Button aria-label="Download" size="small" text @click="exportChartPNG()">
                     <Icon icon="ic:outline-file-download" width="12" height="12" />
                 </Button>
             </div>
         </template>
         <template #content>
-            <div class="chart-container" @click="openDialog">
+            <div ref="chartContainerRef" class="chart-container" @click="openDialog">
                 <Chart 
                     :key="chartKey"
                     :type="selectedType" 
@@ -210,6 +267,14 @@ const dialogChartOptions = computed(() => ({
         :closable="true"
         class="chart-dialog"
     >
+        <template #header>
+            <div class="dialog-header">
+                <span>{{ title }}</span>
+                <Button aria-label="Download HQ" size="small" severity="secondary" @click="exportDialogChartPNG()">
+                    <Icon icon="ic:outline-file-download" width="16" height="16" />
+                </Button>
+            </div>
+        </template>
         <div class="dialog-chart-container">
             <Chart 
                 :key="dialogChartKey"
@@ -288,15 +353,17 @@ const dialogChartOptions = computed(() => ({
   width: 100%;
   height: 100%;
   min-height: 200px;
+  max-height: 400px;
   position: relative;
   display: flex;
-  align-items: stretch;
-  justify-content: stretch;
+  align-items: center;
+  justify-content: center;
   flex: 1;
   transform: translateZ(0);
   will-change: transform;
   cursor: pointer; 
   transition: opacity 0.2s ease;
+  overflow: hidden;
 }
 
 .chart-container:hover {
@@ -304,34 +371,33 @@ const dialogChartOptions = computed(() => ({
 }
 
 .chart-container :deep(canvas) {
-  width: 100% !important;
-  height: 100% !important;
   max-width: 100% !important;
   max-height: 100% !important;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  image-rendering: auto; /* Mejor para gráficos */
   transform: translateZ(0);
   backface-visibility: hidden;
   perspective: 1000px;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
+  /* Optimización para diferentes resoluciones */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .chart-container :deep(.p-chart) {
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
   flex: 1;
   display: flex !important;
-  align-items: stretch;
-  justify-content: stretch;
+  align-items: center;
+  justify-content: center;
 }
 
 .chart-container :deep(.p-chart > div) {
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
   flex: 1 !important;
   display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
 .chart-container :deep(.p-chart > div) {
@@ -396,7 +462,8 @@ hr {
   }
 }
 
-@media (min-resolution: 1.25dppx) {
+/* Optimización para pantallas de alta densidad */
+@media (min-resolution: 2dppx) {
   .chart-container :deep(canvas) {
     image-rendering: auto;
   }
@@ -406,25 +473,21 @@ hr {
   }
 }
 
-@media (min-resolution: 1.5dppx) {
-  .chart-container :deep(canvas) {
-    image-rendering: -webkit-optimize-contrast;
-  }
-  
-  .chart-title {
-    font-size: 0.95rem;
-  }
-}
-
-@media (min-resolution: 2dppx) {
-  .chart-container :deep(canvas) {
-    image-rendering: auto;
-  }
-}
-
 /* Estilos para el diálogo */
 .chart-dialog :deep(.p-dialog-content) {
   padding: 1rem;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.dialog-header span {
+  font-weight: 600;
+  color: #333;
 }
 
 .dialog-chart-container {
