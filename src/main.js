@@ -42,7 +42,7 @@ app.use(PrimeVue, {
         preset:Aura,
         options: {
             prefix: 'p',
-            darkModeSelector: 'system',
+            darkModeSelector: false, // Color de los componentes
             cssLayer: {
                 name: 'primevue',
                 order:'theme, base, primevue'
