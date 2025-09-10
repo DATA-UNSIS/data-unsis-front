@@ -9,10 +9,16 @@
       <nav class="sidebar-nav">
         <ul class="nav-list">
           <li class="nav-item">
-            <router-link to="/alumnos" class="nav-link">
+            <router-link 
+              to="/alumnos" 
+              class="nav-link" 
+              exact 
+              exact-active-class="router-link-exact-active"
+              active-class=""
+            >
               <Icon icon="fa7-regular:home" class="nav-icon" />
               <div class="grid grid-rows-2">
-                <span class="nav-text">Inicio</span>
+                <span class="nav-text block">Inicio</span>
                 <span class="nav-subtext">Inicio</span>
               </div>
             </router-link>
@@ -201,9 +207,6 @@ const logout = () => {
   margin: 0;
 }
 
-.nav-item {
-}
-
 .nav-link {
   display: flex;
   align-items: center;
@@ -222,13 +225,18 @@ const logout = () => {
 }
 
 .nav-link:hover {
-  background: var(--color-shadow, #13442A);
-  color: var(--color-secondary, #ffffff);
+  background: var(--color-shadow, #ffffff);
+  color: var(--color-secondary, #2D6849);
 }
 
 .nav-link.router-link-active {
   background: var(--color-secondary, #ffffff);
-  color: var(--color-text, #275B3B);
+  color: var(--color-text, #2D6849);
+}
+
+.nav-link.router-link-exact-active {
+  background: var(--color-secondary, #2D6849);
+  color: var(--color-text, #ffffff);
 }
 
 .nav-icon {

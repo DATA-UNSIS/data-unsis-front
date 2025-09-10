@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import Sidebar from '../components/Sidebar.vue';
 import DataUnsisHeader from "../components/Data-Unsis-Header.vue";
@@ -7,6 +8,17 @@ import { header } from '@primeuix/themes/aura/accordion';
 
 // Estado reactivo para controlar la visibilidad del sidebar
 const isSidebarVisible = ref(true);
+
+const isInHomeRoute = ref(true);
+const route = useRoute();
+
+watch(
+  () => route.path,
+  (newPath) => {
+    isInHomeRoute.value = !(newPath === '/alumnos' || newPath === '/alumnos/home' || newPath === '/alumnos/ayuda');
+  },
+  { immediate: false }
+);
 
 // Estado reactivo para los filtros
 const filters = ref({
@@ -43,7 +55,7 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
       <button @click="toggleSidebar" class="sidebar-toggle-btn max-md:size-8">
         <Icon :icon="isSidebarVisible ? 'mdi:menu-open' : 'mdi:menu'" />
       </button>
-      <DataUnsisHeader :is-start="true" @filters-changed="headerEmit"/>
+      <DataUnsisHeader :is-start="isInHomeRoute" @filters-changed="headerEmit"/>
     </header>
 
     <!-- Sidebar -->

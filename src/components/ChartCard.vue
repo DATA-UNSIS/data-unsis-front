@@ -269,7 +269,7 @@ function exportDialogChartPNG() {
     >
         <template #header>
             <div class="dialog-header">
-                <span>{{ title }}</span>
+                <span class="align-center">{{ title }}</span>
                 <Button aria-label="Download HQ" size="small" severity="secondary" @click="exportDialogChartPNG()">
                     <Icon icon="ic:outline-file-download" width="16" height="16" />
                 </Button>

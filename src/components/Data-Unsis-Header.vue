@@ -125,7 +125,7 @@ const prop = defineProps<{
           selectedItemsLabel="{0} selecciones"
           />
         </div>
-        <div class="h-6 !mb-6 !ml-3.5">
+        <div class="h-6 !mb-6 !ml-3.5" v-if="isStart">
         <Button class="bg-green-800 text-white w-36 h-12 max-md:w-16" >
           <Icon icon="material-symbols-light:download-rounded" width="24" height="24" />
           Guardar PDF
