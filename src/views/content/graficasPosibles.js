@@ -24,7 +24,7 @@ const Socioeconomic_Information = {
 
 const Personalizated_Questions = {
     TRANSPORT_MEDIUM: {possibleGrafics: ["pie", "doughnut","bar", "line"], type: "bar", title: "¿Cuál es tu principal medio de transporte para llegar a la universidad?", backgroundColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'], borderColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'] },
-    EXTRACURRICULAR_ACTIVITY: {possibleGrafics: ["pie", "doughnut","bar", "line"], type: "bar", title: "¿Qué actividad extracurricular te interesa más?", backgroundColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'], borderColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'] },
+    //EXTRACURRICULAR_ACTIVITY: {possibleGrafics: ["pie", "doughnut","bar", "line"], type: "bar", title: "¿Qué actividad extracurricular te interesa más?", backgroundColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'], borderColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'] },
     HOMEWORK_DEVICES: {possibleGrafics: ["pie", "doughnut","bar", "line"], type: "bar", title: "¿Qué dispositivo utilizas para hacer tus tareas?", backgroundColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'], borderColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'] }
 }
 
