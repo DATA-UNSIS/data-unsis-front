@@ -219,12 +219,14 @@ function exportDialogChartPNG() {
 </script>
 
 <template>
+
+  <!-- Card con la gráfica mas grande -->
     <Card class="chart-card">
         <template #header>
             <div class="chart-header">
                 <span class="chart-title">{{ title }}</span>
                 <Button aria-label="Download" size="small" text @click="exportChartPNG()">
-                    <Icon icon="ic:outline-file-download" width="12" height="12" />
+                  <Icon icon="material-symbols-light:download-rounded" width="28" height="28"  style="color: #000000" />
                 </Button>
             </div>
         </template>
@@ -271,7 +273,7 @@ function exportDialogChartPNG() {
             <div class="dialog-header">
                 <span class="align-center">{{ title }}</span>
                 <Button aria-label="Download HQ" size="small" severity="secondary" @click="exportDialogChartPNG()">
-                    <Icon icon="ic:outline-file-download" width="16" height="16" />
+                  <Icon icon="material-symbols-light:download-rounded" width="30" height="30"  style="color: #000000" />
                 </Button>
             </div>
         </template>
@@ -290,6 +292,7 @@ function exportDialogChartPNG() {
 .chart-card {
   height: 100%;
   width: 100%;
+  aspect-ratio: 1/1;
   transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
@@ -341,9 +344,10 @@ function exportDialogChartPNG() {
 }
 
 .chart-title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #333;
+  font-size: 0.95rem;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 500;
+  color: #1E1E1E;
   line-height: 1.2;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -423,12 +427,13 @@ hr {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.75rem;
+  font-size: 0.90rem;
+  font-family: 'Montserrat', Arial, sans-serif;
 }
 
 .chart-controls span {
   font-weight: 500;
-  color: #555;
+  color: #78877F;
   white-space: nowrap;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -437,10 +442,14 @@ hr {
 .type-select {
   flex: 1;
   min-width: 0;
+  border-radius: 10px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
 }
 
 .type-select :deep(.p-select-label) {
-  font-size: 0.7rem;
+  color: #78877F;
+  font-size: 0.8rem;
+  font-family: 'Montserrat', Arial, sans-serif;
   padding: 0.3rem 0.5rem;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -448,6 +457,8 @@ hr {
 
 .type-select :deep(.p-select-dropdown) {
   width: 1.5rem;
+  font-size: 0.8rem;
+  font-family: 'Montserrat', Arial, sans-serif;
 }
 
 @media (max-width: 768px) {
@@ -480,14 +491,24 @@ hr {
 
 .dialog-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  position: relative;
   width: 100%;
 }
 
 .dialog-header span {
-  font-weight: 600;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 18px;
   color: #333;
+  font-weight: 500;
+}
+
+.dialog-header Button {
+  position: absolute;
+  right: 0;
+  background: transparent;
+  border-color: transparent;
 }
 
 .dialog-chart-container {

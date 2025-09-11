@@ -210,14 +210,14 @@ function getTypeDisplayName(type) {
 
 @media (min-width: 1200px) {
   .content-container {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     max-width: 1400px;
   }
 }
 
 @media (min-width: 992px) and (max-width: 1199px) {
   .content-container {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     padding: 1.75rem;
     gap: 1.25rem;
   }
@@ -277,7 +277,7 @@ function getTypeDisplayName(type) {
 @media (min-width: 1600px) {
   .content-container {
     max-width: 1600px;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
   }
 }

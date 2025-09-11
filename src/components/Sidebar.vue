@@ -1,8 +1,6 @@
 <template>
-  <div
-    class="sidebar"
-  >
-    <!-- Contenido del sidebar -->
+  <div class="sidebar">
+    
     <div class="sidebar-content border-t-indigo-500">
       <hr class="divider" />
 
@@ -99,6 +97,7 @@
 <script setup>
 import { Icon } from "@iconify/vue";
 import { useRouter } from "vue-router";
+import { ref } from "vue";
 
 const router = useRouter();
 
@@ -106,6 +105,9 @@ const logout = () => {
   console.log("Logout clicked");
   router.push("/login");
 };
+
+const isActiveSidebar = ref(true);
+
 </script>
 
 
@@ -131,7 +133,9 @@ const logout = () => {
   transition: all 0.3s ease;
 }
 
-/* Contenido del sidebar */
+/* ...existing code... */
+
+/* ...existing code... */
 .sidebar-content {
   flex: 1;
   display: flex;
@@ -205,6 +209,11 @@ const logout = () => {
   list-style: none;
   padding: 0;
   margin: 0;
+  width: 100%;
+}
+
+.nav-item {
+  width: 100%;
 }
 
 .nav-link {
@@ -214,7 +223,7 @@ const logout = () => {
   text-decoration: none;
   color: var(--color-plain-text, #000000);
   border-radius: 0;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: transparent;
   border: none;
   width: 100%;
@@ -222,21 +231,86 @@ const logout = () => {
   text-align: left;
   font-size: 1rem;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transform: translateX(0);
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: var(--color-secondary, #2D6849);
+  transform: scaleY(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: bottom;
 }
 
 .nav-link:hover {
-  background: var(--color-shadow, #ffffff);
+  background: linear-gradient(135deg, rgba(45, 104, 73, 0.08), rgba(45, 104, 73, 0.04));
+  color: var(--color-secondary, #2D6849);
+  transform: translateX(6px);
+  box-shadow: inset 0 0 0 1px rgba(45, 104, 73, 0.08);
+  padding-left: 1.375rem;
+}
+
+.nav-link:hover::before {
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.nav-link:hover .nav-icon {
+  transform: scale(1.075) rotate(3deg);
   color: var(--color-secondary, #2D6849);
 }
 
+.nav-link:hover .nav-text {
+  transform: translateX(3px);
+}
+
+.nav-link:hover .nav-subtext {
+  transform: translateX(3px);
+  opacity: 0.8;
+}
+
 .nav-link.router-link-active {
-  background: var(--color-secondary, #ffffff);
-  color: var(--color-text, #2D6849);
+  background: linear-gradient(135deg, rgba(45, 104, 73, 0.12), rgba(45, 104, 73, 0.08));
+  color: var(--color-secondary, #2D6849);
+  transform: translateX(3px);
+  padding-left: 1.1875rem;
+  box-shadow: inset 0 0 0 1px rgba(45, 104, 73, 0.12);
+}
+
+.nav-link.router-link-active::before {
+  transform: scaleY(1);
+  background: var(--color-secondary, #2D6849);
 }
 
 .nav-link.router-link-exact-active {
-  background: var(--color-secondary, #2D6849);
+  background: linear-gradient(135deg, var(--color-secondary, #2D6849), rgba(45, 104, 73, 0.9));
   color: var(--color-text, #ffffff);
+  transform: translateX(4.5px);
+  padding-left: 1.28125rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.nav-link.router-link-exact-active::before {
+  transform: scaleY(1);
+  background: #ffffff;
+  width: 4px;
+}
+
+.nav-link.router-link-exact-active .nav-icon {
+  color: #ffffff;
+  transform: scale(1.0375);
+}
+
+.nav-link.router-link-exact-active .nav-text,
+.nav-link.router-link-exact-active .nav-subtext {
+  color: #ffffff;
 }
 
 .nav-icon {
@@ -244,6 +318,8 @@ const logout = () => {
   margin-right: 0.75rem;
   width: 33px;
   height: 33px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
 }
 
 .nav-text {
@@ -251,6 +327,7 @@ const logout = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-subtext {
@@ -259,12 +336,15 @@ const logout = () => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.7;
 }
 
 .options-section {
-  padding: 0 0 2rem 0;
+  padding: 0;
   overflow: hidden;
   flex-shrink: 0;
+  width: 100%;
 }
 
 .options-title {
@@ -274,15 +354,48 @@ const logout = () => {
   margin: 0 0 1rem 0;
   text-transform: uppercase;
   font-weight: 500;
+  padding: 0 1rem;
 }
 
 .logout-btn {
   color: var(--color-plain-text, #000000) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.logout-btn::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: #dc2626;
+  transform: scaleY(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: bottom;
 }
 
 .logout-btn:hover {
-  background: var(--color-shadow, #13442A) !important;
-  color: var(--color-secondary, #ffffff) !important;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.08), rgba(220, 38, 38, 0.04)) !important;
+  color: #dc2626 !important;
+  transform: translateX(6px);
+  box-shadow: inset 0 0 0 1px rgba(220, 38, 38, 0.08);
+  padding-left: 1.375rem;
+}
+
+.logout-btn:hover::before {
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.logout-btn:hover .nav-icon {
+  transform: scale(1.075) rotate(-3deg);
+  color: #dc2626;
+}
+
+.logout-btn:hover .nav-text {
+  transform: translateX(3px);
 }
 
 /* Responsive */
@@ -347,11 +460,40 @@ const logout = () => {
   .nav-link {
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
+    margin: 0;
+  }
+  
+  .nav-link:hover {
+    transform: translateX(3px);
+    padding-left: 0.9375rem;
   }
   
   .nav-icon {
     font-size: 1.1rem;
     margin-right: 0.5rem;
+  }
+}
+
+/* Reducir animaciones para usuarios que prefieren menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .nav-link,
+  .nav-icon,
+  .nav-text,
+  .nav-subtext,
+  .nav-link::before {
+    transition: none;
+  }
+  
+  .nav-link:hover,
+  .nav-link.router-link-active,
+  .nav-link.router-link-exact-active {
+    transform: none;
+  }
+  
+  .nav-link:hover .nav-icon,
+  .nav-link:hover .nav-text,
+  .nav-link:hover .nav-subtext {
+    transform: none;
   }
 }
 

@@ -91,49 +91,46 @@ const prop = defineProps<{
 </script>
 
 <template>
+  <div class="flex items-center justify-between bg-white px-12 py-6 gap-6 m-4">
 
-    <div class="flex items-center justify-between flex-nowrap bg-white px-12 py-6 gap-6 m-4">
-      <div class="flex items-center gap-4 max-md:hidden">
-        <img class="size-24 ml-20" src="/src/assets/logo.png" alt="Logo de la Unsis">
-        <div class="text-green-800 uppercase text-6xl font-libre">data-unsis</div>
-      </div>
+    <div class="flex items-center gap-4 max-md:hidden">
+      <img class="size-24" src="/src/assets/logo.png" alt="Logo de la Unsis">
+      <div class="text-green-800 uppercase text-6xl font-libre">data-unsis</div>
+    </div>
 
-      <div class="flex items-center gap-4">
-        <div class="grid grid-cols-4 gap-4 items-center">
-        <div class="flex-1 mt-3.5 " v-if="isStart">
-          <label id="carrera" class="block !ml-3.5 text-sm font-medium text-gray-700">Carrera</label>
-          <MultiSelect
+    <div class="flex items-end gap-4 absolute right-12 top-1/2 transform -translate-y-1/2">
+
+      <div class="flex-1" v-if="isStart">
+        <label id="carrera" class="type-label">Carrera</label>
+        <MultiSelect
             v-model="selectedCarrera"
             :options="carreras"
-            :class="['text-black','','', 'w-full', '!ml-3.5', '!mb-3.5', '!shadow-md','max-md:w-16']"
-            size="small"
+            class="type-multiselect"
             display="chip"
             :maxSelectedLabels="1"
             selectedItemsLabel="{0} selecciones"
-          />
-        </div>
-        
-        <div v-if="isStart">
-          <label id="semestre" class=" !ml-3.5 block text-sm font-medium text-gray-700">Semestre</label>
-          <MultiSelect 
-          v-model="selectedDegree" 
-          :options="semestres" 
-           
-          :class="['items-center', '','w-full', '!mb-3.5', '!ml-3.5', '', '!shadow-md', 'max-md:w-16','']"
-          size="small"
-          :maxSelectedLabels="3"
-          selectedItemsLabel="{0} selecciones"
-          />
-        </div>
-        <div class="h-6 !mb-6 !ml-3.5" v-if="isStart">
-        <Button class="bg-green-800 text-white w-36 h-12 max-md:w-16" >
-          <Icon icon="material-symbols-light:download-rounded" width="24" height="24" />
+        />
+      </div>
+
+      <div v-if="isStart">
+        <label id="semestre" class="type-label">Semestre</label>
+        <MultiSelect
+            v-model="selectedDegree"
+            :options="semestres"
+            class="type-multiselect"
+            :maxSelectedLabels="3"
+            selectedItemsLabel="{0} selecciones"
+        />
+      </div>
+
+      <div class="flex items-end" v-if="isStart">
+        <Button class="bg-green-800 text-white w-40 h-14 max-md:w-16">
+          <Icon icon="material-symbols-light:download-rounded" width="30" height="30" />
           Guardar PDF
         </Button>
-        </div>
-      </div>
       </div>
     </div>
+  </div>
 </template>
 
 <style scoped>
@@ -142,4 +139,35 @@ const prop = defineProps<{
   font-family: 'Libre Franklin', sans-serif;
 }
 
+.type-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  font-family: 'Montserrat', Arial, sans-serif;
+  color: #78877F;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.type-multiselect {
+  flex: 1;
+  width: 100%;
+  min-width: 180px; /* Agregado para mejor control del ancho mínimo */
+  border-radius: 10px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.type-multiselect :deep(.p-multiselect-label) {
+  color: #000000;
+  font-size: 0.8rem;
+  font-family: 'Montserrat', Arial, sans-serif;
+  padding: 0.3rem 0.5rem;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.type-multiselect :deep(.p-multiselect-trigger) {
+  width: 1.5rem;
+}
 </style>
