@@ -1,113 +1,302 @@
 <script setup>
-import { ref } from 'vue'
-import HeaderInput from '../../components/HeaderInput.vue'
-import ChartDisplay from '../../components/ChartDisplay.vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import Button from 'primevue/button'
+import graficasPosibles from './graficasPosibles.js'
+import ChartCard from '../../components/ChartCard.vue'
 import { statsApi } from '../../services/statsApi.js'
 
-// Definir los emits si este componente necesita emitir eventos a su padre
-const emit = defineEmits(['datos_obtenidos'])
+let response = null;
+// Usar los props recibidos, pero mantener valores por defecto si no se reciben
+const majorsToUse = computed(() => {
+  return props.majors && props.majors.length > 0 
+    ? props.majors 
+    : ["Licenciatura en Administración Municipal", "Licenciatura en Administración Pública", "Licenciatura en Ciencias Biomédicas", "Licenciatura en Ciencias Empresariales",
+       "Licenciatura en Enfermería", "Licenciatura en Informática", "Licenciatura en Medicina", "Licenciatura en Nutrición", "Licenciatura en Odontología"];
+});
 
-// Estados reactivos
-const chartData = ref(null)
-const isLoading = ref(false)
-const errorMessage = ref('')
+const semestersToUse = computed(() => {
+  return props.semesters && props.semesters.length > 0 
+    ? props.semesters 
+    : ["Curso Propedéutico", "Primero", "Segundo", "Tercero", "Cuarto", "Quinto", "Sexto", "Séptimo", "Octavo", "Noveno", "Décimo", "Undécimo", "Duodécimo"];
+});
 
-// Función que maneja el evento del HeaderInput
-const handleGenerateChart = async (filterData) => {
-  console.log('Filtros recibidos en Grafics:', filterData)
-  
-  // Mostrar indicador de carga
-  isLoading.value = true
-  errorMessage.value = ''
-  
-  try {
-    // Llamar al backend con los filtros
-    const result = await statsApi.getChartData(filterData)
-    
-    if (result.success) {
-      console.log('Datos recibidos del backend:', result.data)
-      
-      chartData.value = result.data  // Usar directamente la respuesta del backend
-      
-      console.log('Datos del backend pasados a ChartDisplay:', chartData.value)
-    } else {
-      console.error('Error del backend:', result.error)
-      errorMessage.value = `Error del servidor: ${result.error}`
-      alert(`Error: ${result.error}`)
-    }
-  } catch (error) {
-    console.error('Error inesperado:', error)
-    errorMessage.value = 'Error inesperado al conectar con el servidor'
-    alert('Error inesperado al conectar con el servidor')
-  } finally {
-    isLoading.value = false
+const titlesToUse = computed(() => {
+  return props.titles && props.titles.length > 0 
+    ? props.titles 
+    : Object.keys(graficasPosibles.Demografic_Grafics);
+});
+
+
+// Variables reactivas para manejar múltiples gráficos
+const chartDataList = ref([]);
+async function dataBackend () {
+  console.log('Enviando datos al backend...', titlesToUse.value, majorsToUse.value, semestersToUse.value, props.sexo);
+  response = await statsApi.getChartData(titlesToUse.value, majorsToUse.value, semestersToUse.value, props.sexo)
+  separateResponse()
+}
+
+const props = defineProps({
+  majors: {
+    type: Array,
+    default: () => []
+  },
+  semesters: {
+    type: Array,
+    default: () => []
+  },
+  sexo: {
+    type: String,
+    default: null
+  },
+  titles: {
+    type: Array,
+    default: () => []
   }
+})
+
+// Watcher para detectar cambios en los filtros y actualizar los datos automáticamente
+watch([() => props.majors, () => props.semesters, () => props.sexo], () => {
+  console.log('Filtros cambiaron, actualizando datos...');
+  dataBackend();
+}, { deep: true });
+
+// Ejecutar al montar el componente si hay filtros o usar los valores por defecto
+onMounted(() => {
+  console.log('Componente montado, cargando datos iniciales...');
+  dataBackend();
+});
+
+function separateResponse() {
+  const data = response.data;
+  const newChartList = [];
+  
+  data.results.forEach(element => {
+    // Busca el ENUM correspondiente al título en todas las categorías
+    let enumProps = null;
+    
+    // Buscar en todas las categorías disponibles
+    const allCategories = [
+      graficasPosibles.Demografic_Grafics,
+      graficasPosibles.Geografic_Distribution, 
+      graficasPosibles.Academic_Formation,
+      graficasPosibles.Socioeconomic_Information,
+      graficasPosibles.Personalizated_Questions
+    ];
+    
+    for (const category of allCategories) {
+      if (category[element.title]) {
+        enumProps = category[element.title];
+        break;
+      }
+    }
+    
+    // Si no se encuentra la configuración, usar valores por defecto
+    if (!enumProps) {
+      console.log(`No se encontró configuración para el elemento: ${element.title}`);
+      enumProps = {
+        title: element.title,
+        type: 'bar',
+        possibleGrafics: ['bar', 'pie', 'doughnut', 'line'],
+        backgroundColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+        borderColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+      };
+    }
+    
+    // Extraer las claves (strings) del objeto data
+    const labels = Object.keys(element.data); 
+    const values = Object.values(element.data); 
+
+    const chartData = {
+      labels: labels,
+      datasets: [{
+        label: enumProps.title,
+        data: values,
+        backgroundColor: enumProps.backgroundColors,
+        borderColor: enumProps.borderColors,
+        borderWidth: 1
+      }]
+    };
+    
+    // objeto especial para los datos de un grafico
+    const chartInfo = {
+      id: element.title,
+      title: enumProps.title,
+      chartData: chartData,
+      type: enumProps.type,
+      possibleTypes: enumProps.possibleGrafics?.map(type => ({ 
+        name: getTypeDisplayName(type), 
+        value: type 
+      })) || []
+    };
+    
+    newChartList.push(chartInfo);
+  });
+  
+  chartDataList.value = newChartList;
+}
+
+// Función auxiliar para obtener nombres de display amigables
+function getTypeDisplayName(type) {
+  const typeMap = {
+    'bar': 'Gráfico de Barras',
+    'pie': 'Gráfico de Pastel', 
+    'doughnut': 'Gráfico de Dona',
+    'line': 'Gráfico de Líneas'
+  };
+  return typeMap[type] || type;
 }
 </script>
 
 <template>
-  <div class="grafics-container">
-    <!-- Mostrar indicador de carga si está cargando -->
-    <div v-if="isLoading" class="loading-overlay">
-      <div class="loading-spinner">
-        <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: #275B3B;"></i>
-        <p>Obteniendo datos del servidor...</p>
-      </div>
+    <div class="content-container">
+      <ChartCard 
+        v-for="chart in chartDataList" 
+        :key="chart.id"
+        :title="chart.title"
+        :chartData="chart.chartData"
+        :type="chart.type"
+        :posibleTypes="chart.possibleTypes"
+      />
     </div>
-    
-    <div v-if="errorMessage" class="error-message">
-      <i class="pi pi-exclamation-triangle"></i>
-      {{ errorMessage }}
-    </div>
-    
-    <HeaderInput @generate-chart="handleGenerateChart" />
-    
-    <ChartDisplay :chart-data="chartData" />
-  </div>
 </template>
 
 <style scoped>
-.grafics-container {
-  position: relative;
+.content-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  background-color: #2D6849;
+  min-height: 100vh;
+  image-rendering: crisp-edges;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
+.content-container :deep(.chart-card) {
+  min-height: 350px;
+  max-height: 450px;
+  height: auto;
   width: 100%;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  overflow: hidden;
+}
+
+.content-container :deep(.p-card) {
   height: 100%;
-  background: rgba(255, 255, 255, 0.9);
   display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.content-container :deep(.p-card-body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-container :deep(.p-card-content) {
+  flex: 1;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  z-index: 9999;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
-.loading-spinner {
-  text-align: center;
-  color: #275B3B;
+@media (min-width: 1200px) {
+  .content-container {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 1400px;
+  }
 }
 
-.loading-spinner p {
-  margin-top: 10px;
-  font-size: 1.1rem;
-  color: #275B3B;
+@media (min-width: 992px) and (max-width: 1199px) {
+  .content-container {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 1.75rem;
+    gap: 1.25rem;
+  }
+  
+  .content-container :deep(.chart-card) {
+    min-height: 320px;
+  }
 }
 
-.error-message {
-  background: #fee;
-  color: #c53030;
-  padding: 10px 15px;
-  border: 1px solid #feb2b2;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+@media (min-width: 768px) and (max-width: 991px) {
+  .content-container {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 1.5rem;
+    gap: 1.25rem;
+  }
+  
+  .content-container :deep(.chart-card) {
+    min-height: 340px;
+  }
 }
 
-.error-message i {
-  color: #c53030;
+@media (min-width: 576px) and (max-width: 767px) {
+  .content-container {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+  
+  .content-container :deep(.chart-card) {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 575px) {
+  .content-container {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .content-container :deep(.chart-card) {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 400px) {
+  .content-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .content-container :deep(.chart-card) {
+    min-height: 250px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .content-container {
+    max-width: 1600px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 800px) and (min-width: 768px) {
+  .content-container :deep(.chart-card) {
+    min-height: 280px;
+  }
+}
+
+@media (min-resolution: 1.25dppx) {
+  .content-container :deep(.chart-card) {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+@media (min-resolution: 1.5dppx) {
+  .content-container :deep(.chart-card) {
+    image-rendering: auto;
+  }
 }
 </style>

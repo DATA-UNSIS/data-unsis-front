@@ -8,6 +8,33 @@ import axios from "axios";
 import router from "./router";
 import { Icon } from "@iconify/vue";
 
+// Import Chart.js components
+import {
+    Chart as ChartJS,
+    Title,
+    Tooltip,
+    Legend,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+    ArcElement,
+    PointElement,
+    LineElement
+} from 'chart.js'
+
+// Register Chart.js components
+ChartJS.register(
+    Title,
+    Tooltip,
+    Legend,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+    ArcElement,
+    PointElement,
+    LineElement
+)
+
 const app = createApp(App)
 
 app.use(PrimeVue, {
@@ -15,8 +42,11 @@ app.use(PrimeVue, {
         preset:Aura,
         options: {
             prefix: 'p',
-            darkModeSelector: 'system',
-            cssLayer: false
+            darkModeSelector: false, // Color de los componentes
+            cssLayer: {
+                name: 'primevue',
+                order:'theme, base, primevue'
+            }
         }
     }
 });

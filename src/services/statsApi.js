@@ -1,6 +1,9 @@
 // Servicio para manejar las llamadas a la API de estadísticas
 
-const API_BASE_URL = 'http://localhost:8080/json/testTotalAlumnos'
+const API_BASE_URL = '/api/data-unsis/api/execute-general-query'
+
+
+
 
 export const statsApi = {
   /**
@@ -8,17 +11,17 @@ export const statsApi = {
    * @param {Object} filters - Filtros seleccionados por el usuario
    * @returns {Promise} - Promise con la respuesta del servidor
    */
-  async getChartData(filters) {
+  async getChartData(titles, majors, semesters, sexo) {
     try {
-      console.log('Enviando filtros al backend:', filters.carrera, filters.semestre, filters.sexo)
-      
+      console.log('Enviando filtros al backend:', titles, majors, semesters, sexo)
+
       const response = await fetch(`${API_BASE_URL}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(filters)
+        body: JSON.stringify({ titles, majors, semesters, sexo })
       })
       
       if (!response.ok) {
@@ -33,7 +36,7 @@ export const statsApi = {
         data
       }
     } catch (error) {
-      console.log("Error al obtemer datos del backend")
+      console.log("Error al obtemer datos del backend", error)
       
       return {
         success: false,

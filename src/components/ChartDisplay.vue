@@ -122,7 +122,8 @@ const createChart = async () => {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
+      maintainAspectRatio: true,
+      aspectRatio: chartType === 'pie' || chartType === 'doughnut' ? 1 : 2,
       plugins: {
         title: {
           display: true,
@@ -148,19 +149,6 @@ const createChart = async () => {
     console.error('Error al crear gráfico:', error)
   }
 }
-
-// Nueva función para crear gráficos con datos del backend
-// Formato esperado del JSON:
-// {
-//   "success": true,
-//   "data": {
-//     "titulo": "MAJOR_DISTRIBUTION", // Código del gráfico (se usa para buscar en chartTypes)
-//     "datos": [
-//       { "label": "Texto", "value": 45 },
-//       { "label": "Texto2", "value": 30 }
-//     ]
-//   }
-// }
 // El título del gráfico se toma de la propiedad "title" del chartType correspondiente
 const createChartFromBackendData = async (backendResponse: any) => {
   await nextTick()
@@ -235,7 +223,8 @@ const createChartFromBackendData = async (backendResponse: any) => {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
+      maintainAspectRatio: true,
+      aspectRatio: chartType === 'pie' || chartType === 'doughnut' ? 1 : 2,
       plugins: {
         title: {
           display: true,
@@ -303,7 +292,8 @@ const createChartFromDirectArray = async (dataArray: any[]) => {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
+      maintainAspectRatio: true,
+      aspectRatio: chartType === 'pie' || chartType === 'doughnut' ? 1 : 2,
       plugins: {
         title: {
           display: true,
@@ -363,7 +353,8 @@ const showErrorChart = async (errorMessage: string) => {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
+      maintainAspectRatio: true,
+      aspectRatio: 2,
       plugins: {
         title: {
           display: true,
@@ -444,10 +435,15 @@ if (import.meta.env.DEV) {
 
 .chart-container {
   height: 400px;
+  max-height: 400px;
   position: relative;
   background: white;
   border-radius: 4px;
   padding: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .auto-rotate-section {
@@ -455,7 +451,7 @@ if (import.meta.env.DEV) {
 }
 
 .rotate-btn {
-  background: #3498db;
+  background: #1b6b51;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -469,7 +465,7 @@ if (import.meta.env.DEV) {
 }
 
 .rotate-btn:hover {
-  background: #2980b9;
+  background: #1b6b51;
 }
 
 @media (max-width: 768px) {
@@ -484,10 +480,33 @@ if (import.meta.env.DEV) {
 @media (max-width: 480px) {
   .chart-container {
     height: 250px;
+    max-height: 250px;
   }
   .rotate-btn {
     padding: 10px 20px;
     font-size: 0.9rem;
+  }
+}
+
+/* Ajustes para diferentes niveles de zoom */
+@media (min-resolution: 1.25dppx) {
+  .chart-container {
+    height: 380px;
+    max-height: 380px;
+  }
+}
+
+@media (min-resolution: 1.5dppx) {
+  .chart-container {
+    height: 360px;
+    max-height: 360px;
+  }
+}
+
+@media (min-resolution: 2dppx) {
+  .chart-container {
+    height: 340px;
+    max-height: 340px;
   }
 }
 </style>
