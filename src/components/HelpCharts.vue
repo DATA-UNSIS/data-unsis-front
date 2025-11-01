@@ -64,34 +64,47 @@ const getImage = (type) => {
 .help-charts {
   width: 100%;
   font-family: 'Montserrat', Arial, sans-serif;
-  color: #275B3B;
-  background-color: white;
-  border-radius: 30px;
-  padding: 0;
+  color: #1F2937;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 2rem;
   margin: 0;
   box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .help-charts h2 {
-  color: #275B3B;
+  color: #1F2937;
   font-weight: 700;
   font-size: 2rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   text-align: center;
+  position: relative;
+  padding-bottom: 1rem;
 }
 
+.help-charts h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: #2D6849;
+  border-radius: 2px;
+}
 
 .chart-section h3 {
-  color: #4a7c59;
+  color: #2D6849;
   font-weight: 600;
   font-size: 1.3rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   text-align: left;
 }
 
-
 .chart-section p {
-  color: #4a7c59;
+  color: #4B5563;
   font-size: 1rem;
   margin-bottom: 1rem;
   text-align: justify;
@@ -99,10 +112,11 @@ const getImage = (type) => {
 }
 
 .chart-section {
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background: #F9FAFB;
+  border-radius: 0.75rem;
+  border: 1px solid #E5E7EB;
 }
 
 .chart-image {
@@ -110,10 +124,11 @@ const getImage = (type) => {
   margin: 1rem auto;
   max-width: 100%;
   width: 350px;
-  background: #f5f7fa;
-  border: 1px solid #a5d6a7;
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
   height: auto;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 

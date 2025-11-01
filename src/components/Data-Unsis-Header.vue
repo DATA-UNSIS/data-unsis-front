@@ -124,7 +124,7 @@ const prop = defineProps<{
       </div>
 
       <div class="flex items-end" v-if="isStart">
-        <Button class="bg-green-800 text-white w-40 h-14 max-md:w-16">
+        <Button class="primary-button w-40 h-14 max-md:w-16">
           <Icon icon="material-symbols-light:download-rounded" width="30" height="30" />
           Guardar PDF
         </Button>
@@ -169,5 +169,23 @@ const prop = defineProps<{
 
 .type-multiselect :deep(.p-multiselect-trigger) {
   width: 1.5rem;
+}
+
+.primary-button {
+  background-color: #2D6849;
+  color: white;
+  border: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.primary-button:hover {
+  background-color: #1e4529;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(45, 104, 73, 0.2);
+}
+
+.primary-button:active {
+  transform: translateY(0);
 }
 </style>
