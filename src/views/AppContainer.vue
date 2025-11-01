@@ -120,6 +120,9 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
 </template>
 
 <style scoped>
+span{
+  color: #1e4529;
+}
 .app-layout {
   display: grid;
   grid-template-areas:
