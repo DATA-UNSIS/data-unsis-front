@@ -5,7 +5,7 @@ import Image from 'primevue/image'
 <template>
   <div class="home-container">
     <div class="logo-section">
-      <Image src="/src/assets/unsis-logo.png" alt="Escudo de la Universidad de la Sierra Sur" class="size-80 max-md:size-32"  preview/>
+      <Image src="/src/assets/unsis-logo.png" alt="Escudo de la Universidad de la Sierra Sur" class="size-45 max-md:size-32"  preview/>
     </div>
     <div class="welcome-content">
       <h1 class="welcome-title">Bienvenido al Portal de Estadísticas</h1>
@@ -42,7 +42,7 @@ import Image from 'primevue/image'
 }
 
 .welcome-title {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
   margin-bottom: 1rem;
   color: #1F2937;
