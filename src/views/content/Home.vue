@@ -45,7 +45,7 @@ import Image from 'primevue/image'
   font-size: 2.2rem;
   font-weight: 700;
   margin-bottom: 1rem;
-  color: #1F2937;
+  color: #2D6849;
   line-height: 1.2;
 }
 
