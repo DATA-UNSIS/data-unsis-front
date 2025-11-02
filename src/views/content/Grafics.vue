@@ -168,7 +168,7 @@ function getTypeDisplayName(type) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1.5rem;
-  background-color: #2D6849;
+  background-color: transparent;
   min-height: 100vh;
   image-rendering: crisp-edges;
   -webkit-font-smoothing: antialiased;

@@ -120,6 +120,9 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
 </template>
 
 <style scoped>
+span{
+  color: #1e4529;
+}
 .app-layout {
   display: grid;
   grid-template-areas:
@@ -129,7 +132,7 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
   grid-template-columns: 320px 1fr;
   grid-template-rows: auto 1fr auto;
   min-height: 100vh;
-  background-color: #2D6849;
+  background-color: #F9FAFB;
   transition: grid-template-columns 0.3s ease;
 }
 
@@ -204,9 +207,10 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
 
 .sidebar-area {
   grid-area: sidebar;
-  background-color: #2D6849;
-  border-right: 2px solid #13442A;
+  background-color: #ffffff;
+  border-right: 1px solid #E5E7EB;
   transition: all 0.3s ease;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
 }
 
 .external-sidebar-btn {
@@ -294,7 +298,7 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
 
 .main-content-area {
   grid-area: main;
-  background-color: #2D6849;
+  background-color: #F9FAFB;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -306,10 +310,10 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
 }
 
 .content-wrapper {
-  background: #2D6849;
+  background: #ffffff;
   border-radius: 1rem;
   padding: 2rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   overflow-y: auto;
   overflow-x: hidden;
   height: 70vh;
@@ -322,8 +326,9 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
 
 .footer-area {
   grid-area: footer;
-  background-color: #2D6849;
-  border-top: 1px solid #13442A;
+  background-color: #ffffff;
+  border-top: 1px solid #E5E7EB;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .footer-content {
@@ -331,7 +336,7 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
   align-items: center;
   justify-content: space-between;
   padding: 1rem 2rem;
-  color: white;
+  color: #6B7280;
   min-height: 60px;
 }
 
@@ -345,11 +350,13 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
   width: 2.5rem;
   height: 2.5rem;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, color 0.2s ease;
+  color: #2D6849;
 }
 
 .icon:hover {
   transform: scale(1.1);
+  color: #1e4529;
 }
 
 @media (max-width: 1024px) {

@@ -304,6 +304,14 @@ function exportDialogChartPNG() {
   display: flex;
   will-change: transform;
   image-rendering: crisp-edges;
+  background: #ffffff;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
+}
+
+.chart-card :deep(.p-card):hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .chart-card :deep(.p-card-body) {
@@ -314,14 +322,15 @@ function exportDialogChartPNG() {
 }
 
 .chart-card :deep(.p-card-header) {
-  padding: 0.5rem;
+  padding: 0.75rem;
   flex-shrink: 0;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #E5E7EB;
+  background: #F9FAFB;
 }
 
 .chart-card :deep(.p-card-content) {
   flex: 1;
-  padding: 0.25rem;
+  padding: 0.5rem;
   display: flex;
   align-items: stretch;
   justify-content: stretch;
@@ -330,11 +339,14 @@ function exportDialogChartPNG() {
   position: relative;
   overflow: hidden;
   min-height: 0;
+  background: #ffffff;
 }
 
 .chart-card :deep(.p-card-footer) {
   padding: 0;
   flex-shrink: 0;
+  background: #F9FAFB;
+  border-top: 1px solid #E5E7EB;
 }
 
 .chart-header {
@@ -346,8 +358,8 @@ function exportDialogChartPNG() {
 .chart-title {
   font-size: 0.95rem;
   font-family: 'Montserrat', Arial, sans-serif;
-  font-weight: 500;
-  color: #1E1E1E;
+  font-weight: 600;
+  color: #1F2937;
   line-height: 1.2;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -414,13 +426,13 @@ function exportDialogChartPNG() {
 }
 
 .chart-footer {
-  padding: 0.5rem;
+  padding: 0.75rem;
 }
 
 hr {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.75rem 0;
   border: none;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid #E5E7EB;
 }
 
 .chart-controls {
@@ -433,7 +445,7 @@ hr {
 
 .chart-controls span {
   font-weight: 500;
-  color: #78877F;
+  color: #6B7280;
   white-space: nowrap;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

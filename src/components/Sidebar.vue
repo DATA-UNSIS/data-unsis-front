@@ -140,6 +140,26 @@ const isActiveSidebar = ref(true);
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Estilos para la scrollbar */
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: #F3F4F6;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: #9CA3AF;
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
 }
 
 .sidebar-header {
@@ -250,11 +270,10 @@ const isActiveSidebar = ref(true);
 }
 
 .nav-link:hover {
-  background: linear-gradient(135deg, rgba(45, 104, 73, 0.08), rgba(45, 104, 73, 0.04));
-  color: var(--color-secondary, #2D6849);
-  transform: translateX(6px);
-  box-shadow: inset 0 0 0 1px rgba(45, 104, 73, 0.08);
-  padding-left: 1.375rem;
+  background: #F3F4F6;
+  color: #2D6849;
+  transform: translateX(4px);
+  padding-left: 1.25rem;
 }
 
 .nav-link:hover::before {
@@ -264,7 +283,7 @@ const isActiveSidebar = ref(true);
 
 .nav-link:hover .nav-icon {
   transform: scale(1.075) rotate(3deg);
-  color: var(--color-secondary, #2D6849);
+  color: #2D6849;
 }
 
 .nav-link:hover .nav-text {
@@ -277,24 +296,23 @@ const isActiveSidebar = ref(true);
 }
 
 .nav-link.router-link-active {
-  background: linear-gradient(135deg, rgba(45, 104, 73, 0.12), rgba(45, 104, 73, 0.08));
-  color: var(--color-secondary, #2D6849);
+  background: #F3F4F6;
+  color: #2D6849;
   transform: translateX(3px);
   padding-left: 1.1875rem;
-  box-shadow: inset 0 0 0 1px rgba(45, 104, 73, 0.12);
 }
 
 .nav-link.router-link-active::before {
   transform: scaleY(1);
-  background: var(--color-secondary, #2D6849);
+  background: #2D6849;
 }
 
 .nav-link.router-link-exact-active {
-  background: linear-gradient(135deg, var(--color-secondary, #2D6849), rgba(45, 104, 73, 0.9));
-  color: var(--color-text, #ffffff);
+  background: linear-gradient(135deg, #2D6849, rgba(45, 104, 73, 0.9));
+  color: #ffffff;
   transform: translateX(4.5px);
   padding-left: 1.28125rem;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(45, 104, 73, 0.2);
 }
 
 .nav-link.router-link-exact-active::before {
