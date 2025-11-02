@@ -11,7 +11,10 @@ const props = defineProps({
   title: { type: String, required: true },
   chartData: { type: Object, required: true },
   type: { type: String, required: true },
-  posibleTypes: { type: Array, required: true }
+  posibleTypes: { type: Array, required: true },
+  Purpose: { type: String, required: true },
+  Interpretation: { type: String, required: true },
+  Application: { type: String, required: true }
 });
 
 const selectedType = ref(props.type);
@@ -19,6 +22,7 @@ const chartKey = ref(0);
 const isDialogVisible = ref(false);
 const dialogChartKey = ref(0);
 const chartContainerRef = ref(null);
+const isHelpDialogVisible = ref(false);
 
 const openDialog = () => {
   isDialogVisible.value = true;
@@ -26,6 +30,10 @@ const openDialog = () => {
   nextTick(() => {
     dialogChartKey.value++;
   });
+};
+
+const helpDialog = () => {
+  isHelpDialogVisible.value = true;
 };
 
 watch(selectedType, async () => {
@@ -220,14 +228,18 @@ function exportDialogChartPNG() {
 
 <template>
 
-  <!-- Card con la gráfica mas grande -->
     <Card class="chart-card">
         <template #header>
             <div class="chart-header">
                 <span class="chart-title">{{ title }}</span>
-                <Button aria-label="Download" size="small" text @click="exportChartPNG()">
-                  <Icon icon="material-symbols-light:download-rounded" width="28" height="28"  style="color: #000000" />
-                </Button>
+                <div class="options-buttons">
+                  <Button aria-label="Help HQ" size="small" text  @click="helpDialog()">
+                    <Icon icon="mdi-light:help" width="28" height="28" style="color: #000000"/>
+                  </Button>
+                  <Button aria-label="Download" size="small" text @click="exportChartPNG()">
+                    <Icon icon="material-symbols-light:download-rounded" width="28" height="28" style="color: #000000" />
+                  </Button>
+                </div>
             </div>
         </template>
         <template #content>
@@ -272,9 +284,12 @@ function exportDialogChartPNG() {
         <template #header>
             <div class="dialog-header">
                 <span class="align-center">{{ title }}</span>
-                <Button aria-label="Download HQ" size="small" severity="secondary" @click="exportDialogChartPNG()">
-                  <Icon icon="material-symbols-light:download-rounded" width="30" height="30"  style="color: #000000" />
-                </Button>
+                  <div class="options-buttons">
+                    <Button aria-label="Download HQ" size="small" severity="secondary" @click="exportDialogChartPNG()">
+                      <Icon icon="material-symbols-light:download-rounded" width="30" height="30"  style="color: #000000" />
+                    </Button>
+                  </div>
+                
             </div>
         </template>
         <div class="dialog-chart-container">
@@ -286,9 +301,61 @@ function exportDialogChartPNG() {
             />
         </div>
     </Dialog>
+
+    <!-- Diálogo con la información de ayuda-->
+    <Dialog
+        v-model:visible="isHelpDialogVisible" 
+        modal
+        :style="{ width: '80vw', maxWidth: '700px' }"
+        :dismissable-mask="true"
+        :closable="true"
+        class="help-dialog"
+    >
+        <template #header>
+            <div class="dialog-header help-dialog-header">
+                <span>{{ title }}</span>
+            </div>
+        </template>
+      <template #default>
+        <div class="help-content">
+          <div class="help-body">
+            <div class="help-section">
+              <div class="section-header">
+                <Icon icon="mdi:target" width="20" height="20" style="color: #059669"/>
+                <span class="section-title">Propósito del Gráfico</span>
+              </div>
+              <div class="help-description">
+                <p>{{ Purpose }}</p>
+              </div>
+            </div>
+            
+            <div class="help-section">
+              <div class="section-header">
+                <Icon icon="mdi:chart-line-variant" width="20" height="20" style="color: #3B82F6"/>
+                <span class="section-title">Cómo Interpretar</span>
+              </div>
+              <div class="help-description">
+                <p>{{ Interpretation }}</p>
+              </div>
+            </div>
+
+            <div class="help-section">
+              <div class="section-header">
+                <Icon icon="mdi:lightbulb-outline" width="20" height="20" style="color: #F59E0B"/>
+                <span class="section-title">Ejemplo Práctico</span>
+              </div>
+              <div class="help-description">
+                <p>{{ Application }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </Dialog>
 </template>
 
 <style scoped>
+
 .chart-card {
   height: 100%;
   width: 100%;
@@ -304,7 +371,7 @@ function exportDialogChartPNG() {
   display: flex;
   will-change: transform;
   image-rendering: crisp-edges;
-  background: #ffffff;
+  background-color: #5fff87;
   border: 1px solid #E5E7EB;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   transition: box-shadow 0.2s ease;
@@ -319,6 +386,7 @@ function exportDialogChartPNG() {
   display: flex;
   flex-direction: column;
   padding: 0;
+  
 }
 
 .chart-card :deep(.p-card-header) {
@@ -326,6 +394,7 @@ function exportDialogChartPNG() {
   flex-shrink: 0;
   border-bottom: 1px solid #E5E7EB;
   background: #F9FAFB;
+  background-color: #e6f6f4;
 }
 
 .chart-card :deep(.p-card-content) {
@@ -501,6 +570,12 @@ hr {
   padding: 1rem;
 }
 
+.chart-dialog :deep(.p-dialog-header) {
+  background-color: #e6f6f4;
+  padding: 1rem;
+  border-radius: 8px 8px 0 0;
+}
+
 .dialog-header {
   display: flex;
   justify-content: center;
@@ -512,13 +587,19 @@ hr {
 .dialog-header span {
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 18px;
-  color: #333;
-  font-weight: 500;
+  color: #1F2937;
+  font-weight: 600;
+}
+
+.dialog-header .options-buttons {
+  position: absolute;
+  right: 0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .dialog-header Button {
-  position: absolute;
-  right: 0;
   background: transparent;
   border-color: transparent;
 }
@@ -534,26 +615,26 @@ hr {
 }
 
 .dialog-chart-container :deep(.p-chart) {
-  width: 100% !important;
-  height: 100% !important;
+  width: 100% ;
+  height: 100%;
   flex: 1;
-  display: flex !important;
+  display: flex;
   align-items: stretch;
   justify-content: stretch;
 }
 
 .dialog-chart-container :deep(.p-chart > div) {
-  width: 100% !important;
-  height: 100% !important;
-  flex: 1 !important;
-  display: flex !important;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  display: flex;
 }
 
 .dialog-chart-container :deep(canvas) {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   image-rendering: auto;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -567,6 +648,189 @@ hr {
   .dialog-chart-container {
     height: 50vh;
     min-height: 300px;
+  }
+}
+
+/* Estilos para el diálogo de ayuda */
+.help-dialog :deep(.p-dialog-content) {
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.help-dialog :deep(.p-dialog-header) {
+  background-color: #e6f6f4;
+  padding: 1.5rem;
+  border-radius: 12px 12px 0 0;
+}
+
+.help-dialog-header {
+  color: #1F2937;
+}
+
+.help-dialog-header span {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: #1F2937;
+}
+
+.help-content {
+  padding: 0;
+  background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+  border-radius: 5%;
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 2rem 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.help-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+}
+
+.help-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.help-body {
+  padding: 1.5rem 2rem 2rem 2rem;
+}
+
+.help-section {
+  margin-bottom: 2rem;
+}
+
+.help-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #F3F4F6;
+}
+
+.section-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.help-description {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.help-description p {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #4B5563;
+  margin: 0;
+  text-align: justify;
+}
+
+.help-description :deep(strong) {
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.help-description :deep(em) {
+  font-style: italic;
+  color: #059669;
+  font-weight: 500;
+}
+
+.help-tips {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tip-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.9rem;
+  color: #4B5563;
+  border-bottom: 1px solid #F3F4F6;
+  transition: all 0.2s ease;
+}
+
+.tip-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.tip-item:hover {
+  color: #059669;
+  transform: translateX(4px);
+}
+
+.tip-item span {
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .help-dialog {
+    width: 95vw !important;
+  }
+  
+  .help-header {
+    padding: 1rem 1.5rem 0.75rem 1.5rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .help-title {
+    font-size: 1.2rem;
+  }
+  
+  .help-body {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1rem;
+  }
+  
+  .help-description,
+  .help-tips {
+    padding: 1rem;
+  }
+  
+  .tip-item {
+    font-size: 0.85rem;
   }
 }
 </style>
