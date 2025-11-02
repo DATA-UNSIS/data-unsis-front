@@ -50,7 +50,7 @@ function login() {
 </template>
 
 <style scoped>
-/* Container principal para centrado perfecto */
+/* Container principal*/
 .login-container {
   min-height: 100vh;
   display: flex;

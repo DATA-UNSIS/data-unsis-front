@@ -98,7 +98,10 @@ function separateResponse() {
         type: 'bar',
         possibleGrafics: ['bar', 'pie', 'doughnut', 'line'],
         backgroundColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-        borderColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+        borderColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+        Purpose: 'Gráfico generado automáticamente para mostrar la distribución de datos.',
+        Interpretation: 'Los valores más altos representan categorías con mayor frecuencia o importancia.',
+        Application: 'Utiliza esta información para tomar decisiones basadas en los datos presentados.'
       };
     }
     
@@ -126,7 +129,10 @@ function separateResponse() {
       possibleTypes: enumProps.possibleGrafics?.map(type => ({ 
         name: getTypeDisplayName(type), 
         value: type 
-      })) || []
+      })) || [],
+      Purpose: enumProps.Purpose,
+      Interpretation: enumProps.Interpretation,
+      Application: enumProps.Application
     };
     
     newChartList.push(chartInfo);
@@ -156,6 +162,9 @@ function getTypeDisplayName(type) {
         :chartData="chart.chartData"
         :type="chart.type"
         :posibleTypes="chart.possibleTypes"
+        :Purpose="chart.Purpose"
+        :Interpretation="chart.Interpretation"
+        :Application="chart.Application"
       />
     </div>
 </template>
