@@ -27,8 +27,14 @@ import Image from 'primevue/image'
   text-align: center;
   gap: 2rem;
   background: #ffffff;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  border-radius: 25px;
+  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.home-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.5);
 }
 
 .logo-section {
@@ -43,10 +49,10 @@ import Image from 'primevue/image'
 
 .welcome-title {
   font-size: 2.2rem;
-  font-weight: 700;
+  font-weight: bold;
   margin-bottom: 1rem;
   color: #2D6849;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 .welcome-title::after {
@@ -68,6 +74,7 @@ import Image from 'primevue/image'
 @media (max-width: 768px) {
   .home-container {
     padding: 2rem 1rem;
+    border-radius: 20px;
   }
   
   .welcome-title {
@@ -76,6 +83,12 @@ import Image from 'primevue/image'
   
   .welcome-subtitle {
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-container {
+    border-radius: 15px;
   }
 }
 </style>

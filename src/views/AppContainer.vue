@@ -132,7 +132,7 @@ span{
   grid-template-columns: 320px 1fr;
   grid-template-rows: auto 1fr auto;
   min-height: 100vh;
-  background-color: #F9FAFB;
+  background: linear-gradient(135deg, #f0f9f4 0%, #e8f5e8 100%);
   transition: grid-template-columns 0.3s ease;
 }
 
@@ -196,7 +196,7 @@ span{
 .header-area {
   grid-area: header;
   background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 100;
   position: relative;
   display: flex;
@@ -208,9 +208,9 @@ span{
 .sidebar-area {
   grid-area: sidebar;
   background-color: #ffffff;
-  border-right: 1px solid #E5E7EB;
+  border-right: none;
   transition: all 0.3s ease;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
 }
 
 .external-sidebar-btn {
@@ -298,7 +298,7 @@ span{
 
 .main-content-area {
   grid-area: main;
-  background-color: #F9FAFB;
+  background-color: transparent;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -311,9 +311,9 @@ span{
 
 .content-wrapper {
   background: #ffffff;
-  border-radius: 1rem;
+  border-radius: 25px;
   padding: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.4);
   overflow-y: auto;
   overflow-x: hidden;
   height: 70vh;
@@ -322,13 +322,19 @@ span{
   width: 100%;
   position: relative;
   min-height: 400px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.content-wrapper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.5);
 }
 
 .footer-area {
   grid-area: footer;
   background-color: #ffffff;
-  border-top: 1px solid #E5E7EB;
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
+  border-top: none;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .footer-content {
@@ -401,7 +407,7 @@ span{
   }
   .content-wrapper {
     padding: 1.5rem;
-    border-radius: 0.75rem;
+    border-radius: 20px;
     height: 65vh;
     max-height: 65vh;
     min-height: 65vh;
@@ -423,7 +429,7 @@ span{
   }
   .content-wrapper {
     padding: 1rem;
-    border-radius: 0.5rem;
+    border-radius: 15px;
     height: 60vh;
     max-height: 60vh;
     min-height: 60vh;
