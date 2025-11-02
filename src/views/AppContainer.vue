@@ -5,7 +5,7 @@ import { Icon } from '@iconify/vue';
 import Sidebar from '../components/Sidebar.vue';
 import DataUnsisHeader from "../components/Data-Unsis-Header.vue";
 
-const isInHomeRoute = ref(true);
+const isInHomeRoute = ref(false);
 const route = useRoute();
 
 watch(
@@ -13,7 +13,7 @@ watch(
   (newPath) => {
     isInHomeRoute.value = !(newPath === '/alumnos' || newPath === '/alumnos/home' || newPath === '/alumnos/ayuda');
   },
-  { immediate: false }
+  { immediate: true }
 );
 
 const filters = ref({
