@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { Icon } from '@iconify/vue'
+import HotMap from '../../components/HotMap.vue'
 
 // Variables con datos ficticios
 const totalStudents = ref(98)
@@ -160,12 +161,12 @@ const consultData = () => {
       </div>
     </div>
   </div>
+  
 </template>
 
 <style scoped>
 .home-container {
   padding: 2rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   min-height: 100vh;
   font-family: 'Montserrat', Arial, sans-serif;
 }
