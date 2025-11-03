@@ -142,9 +142,9 @@ const prop = defineProps<{
 .type-label {
   display: block;
   margin-bottom: 0.25rem;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   font-family: 'Montserrat', Arial, sans-serif;
-  color: #78877F;
+  color: #2d3531;
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -159,7 +159,7 @@ const prop = defineProps<{
 }
 
 .type-multiselect :deep(.p-multiselect-label) {
-  color: #000000;
+  color: #78877F;
   font-size: 0.8rem;
   font-family: 'Montserrat', Arial, sans-serif;
   padding: 0.3rem 0.5rem;

@@ -428,7 +428,7 @@ function exportDialogChartPNG() {
   font-size: 0.95rem;
   font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 600;
-  color: #1F2937;
+  color: #2D6849;
   line-height: 1.2;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -529,9 +529,9 @@ hr {
 
 .type-select :deep(.p-select-label) {
   color: #78877F;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-family: 'Montserrat', Arial, sans-serif;
-  padding: 0.3rem 0.5rem;
+  padding: 0.5rem 0.5rem;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -544,7 +544,7 @@ hr {
 
 @media (max-width: 768px) {
   .chart-title {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
   
   .chart-controls {
@@ -606,35 +606,37 @@ hr {
 
 .dialog-chart-container {
   width: 100%;
-  height: 60vh;
   min-height: 400px;
+  max-height: 70vh;
   position: relative;
   display: flex;
-  align-items: stretch;
-  justify-content: stretch;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
 }
 
 .dialog-chart-container :deep(.p-chart) {
-  width: 100% ;
-  height: 100%;
+  width: 100% !important;
+  height: auto !important;
+  max-height: 100%;
   flex: 1;
-  display: flex;
-  align-items: stretch;
-  justify-content: stretch;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
 .dialog-chart-container :deep(.p-chart > div) {
-  width: 100%;
-  height: 100%;
-  flex: 1;
-  display: flex;
+  width: 100% !important;
+  height: auto !important;
+  max-height: 100%;
+  flex: 1 !important;
+  display: flex !important;
 }
 
 .dialog-chart-container :deep(canvas) {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
+  width: 80%;
+  max-width: 100% !important;
+  max-height: 100% !important;
   image-rendering: auto;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -646,7 +648,7 @@ hr {
   }
   
   .dialog-chart-container {
-    height: 50vh;
+    max-height: 60vh;
     min-height: 300px;
   }
 }

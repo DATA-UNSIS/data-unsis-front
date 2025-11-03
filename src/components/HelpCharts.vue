@@ -1,6 +1,8 @@
 <template>
   <div class="help-charts">
-    <h2>¿Cómo interpretar los gráficos?</h2>
+    <header class="chart-section">
+      <h2>¿Cómo interpretar los gráficos?</h2>
+    </header>
     <section v-for="chart in charts" :key="chart.type" class="chart-section">
       <h3>{{ chart.title }}</h3>
       <p>{{ chart.description }}</p>
@@ -61,46 +63,23 @@ const getImage = (type) => {
 
 
 <style scoped>
-.help-charts {
-  width: 100%;
-  font-family: 'Montserrat', Arial, sans-serif;
-  color: #1F2937;
-  background-color: #ffffff;
-  border-radius: 1rem;
-  padding: 2rem;
-  margin: 0;
-  box-sizing: border-box;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-}
 
 .help-charts h2 {
-  color: #1F2937;
-  font-weight: 700;
+  color: #2D6849;
+  font-weight: bold;
   font-size: 2rem;
-  margin-bottom: 2rem;
   text-align: center;
   position: relative;
-  padding-bottom: 1rem;
 }
 
-.help-charts h2::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 4px;
-  background: #2D6849;
-  border-radius: 2px;
-}
 
 .chart-section h3 {
   color: #2D6849;
-  font-weight: 600;
+  font-weight: bold;
   font-size: 1.3rem;
   margin-bottom: 0.75rem;
   text-align: left;
+  line-height: 1.3;
 }
 
 .chart-section p {
@@ -113,38 +92,71 @@ const getImage = (type) => {
 
 .chart-section {
   margin-bottom: 2.5rem;
-  padding: 1.5rem;
-  background: #F9FAFB;
-  border-radius: 0.75rem;
-  border: 1px solid #E5E7EB;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 8px 30px -5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chart-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px -5px rgba(0, 0, 0, 0.3);
 }
 
 .chart-image {
   display: block;
-  margin: 1rem auto;
+  margin: 1.5rem auto;
   max-width: 100%;
   width: 350px;
   background: #ffffff;
-  border: 1px solid #E5E7EB;
-  border-radius: 0.5rem;
+  border: none;
+  border-radius: 15px;
   height: auto;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.chart-image:hover {
+  transform: scale(1.02);
 }
 
 
+@media (max-width: 768px) {
+  .help-charts {
+    padding: 2rem;
+    border-radius: 20px;
+  }
+  
+  .chart-section {
+    border-radius: 15px;
+    padding: 1.5rem;
+  }
+}
+
 @media (max-width: 500px) {
   .help-charts {
-    padding: 0.5rem;
+    padding: 1.5rem;
+    border-radius: 15px;
   }
+  
+  .chart-section {
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  
   .chart-image {
     width: 100%;
     max-width: 100%;
+    border-radius: 12px;
   }
+  
   .help-charts h2 {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
   }
+  
   .chart-section h3 {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 }
 </style>
