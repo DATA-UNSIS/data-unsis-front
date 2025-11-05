@@ -1,20 +1,111 @@
 <template>
   <div class="help-charts">
-    <h2>¿Cómo interpretar los gráficos?</h2>
-    <section v-for="chart in charts" :key="chart.type" class="chart-section">
+    <div class="title-container">
+      <h2>¿Cómo interpretar los gráficos?</h2>
+    </div>
+    
+    <section
+      v-for="chart in charts"
+      :key="chart.type"
+      class="chart-section"
+    >
       <h3>{{ chart.title }}</h3>
       <p>{{ chart.description }}</p>
-      <img
-        :src="getImage(chart.type)"
-        :alt="`Ejemplo gráfico ${chart.title}`"
-        class="chart-image" 
-        width="250"
-      />
+      <div class="chart-container">
+        <canvas :ref="el => setChartRef(chart.type, el)"></canvas>
+      </div>
     </section>
   </div>
 </template>
 
 <script setup>
+import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue'
+import {
+  Chart,
+  PieController,
+  DoughnutController,
+  BarController,
+  RadarController,
+  ArcElement,
+  BarElement,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  RadialLinearScale,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js'
+
+// Registrar los componentes de Chart.js
+Chart.register(
+  PieController,
+  DoughnutController,
+  BarController,
+  RadarController,
+  ArcElement,
+  BarElement,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  RadialLinearScale,
+  Title,
+  Tooltip,
+  Legend
+)
+
+const chartInstances = ref({})
+const chartRefs = ref({})
+
+// detección de modo oscuro
+const isDarkReaderActive = () => {
+  try {
+    const bodyStyle = window.getComputedStyle(document.body)
+    const filter = bodyStyle.filter
+    const hasDarkReaderFilter = filter && (
+      filter.includes('invert') || 
+      filter.includes('hue-rotate') ||
+      filter.includes('contrast') ||
+      filter.includes('darkreader')
+    )
+    
+    const darkReaderElements = document.querySelectorAll('[class*="darkreader"], [id*="darkreader"]')
+    const hasDarkReaderElements = darkReaderElements.length > 0
+    const bodyBackground = bodyStyle.backgroundColor
+    const isDarkBackground = bodyBackground && (
+      bodyBackground.includes('rgb(23, 25, 35)') || // Fondo típico de Dark Reader
+      bodyBackground.includes('rgb(13, 17, 23)') ||
+      bodyBackground.includes('rgb(0, 0, 0)')
+    )
+    
+    // 4. Verificar si el texto es blanco
+    const bodyColor = bodyStyle.color
+    const isWhiteText = bodyColor && bodyColor.includes('rgb(255, 255, 255)')
+    
+    console.log('Dark Reader Detection:', {
+      filter,
+      hasDarkReaderFilter,
+      hasDarkReaderElements,
+      bodyBackground,
+      isDarkBackground,
+      bodyColor,
+      isWhiteText
+    })
+    return hasDarkReaderFilter || hasDarkReaderElements || (isDarkBackground && isWhiteText)
+  } catch (error) {
+    console.log('Error detecting Dark Reader:', error)
+    return false
+  }
+}
+
+const setChartRef = (type, el) => {
+  if (el) {
+    chartRefs.value[type] = el
+  }
+}
+
 const charts = [
   {
     type: 'pie',
@@ -53,12 +144,140 @@ const charts = [
   }
 ]
 
+onMounted(async () => {
+  await nextTick()
 
-const getImage = (type) => {
-  return new URL(`../assets/help-charts/${type}.png`, import.meta.url).href
-}
+  // Esperar un poco más para que modo oscuro aplique sus estilos
+  setTimeout(() => {
+    const darkMode = isDarkReaderActive()
+    
+    console.log('Final Dark Mode Detection:', darkMode)
+    
+    // COLORES DEFINITIVOS
+    const textColor = darkMode ? '#FFFFFF' : '#1F2937'
+    const gridColor = darkMode ? '#4B5563' : '#E5E7EB'
+    const tooltipBg = darkMode ? '#1F2937' : '#FFFFFF'
+
+    charts.forEach(chart => {
+      const ctx = chartRefs.value[chart.type]
+      if (!ctx) {
+        console.warn(`No se encontró el canvas para el gráfico: ${chart.type}`)
+        return
+      }
+
+      let data = {}
+      let options = {
+        plugins: {
+          legend: { 
+            position: 'top',
+            labels: { 
+              color: textColor,
+              font: {
+                family: "'Montserrat', Arial, sans-serif"
+              }
+            }
+          },
+          tooltip: {
+            titleFont: {
+              family: "'Montserrat', Arial, sans-serif"
+            },
+            bodyFont: {
+              family: "'Montserrat', Arial, sans-serif"
+            },
+            backgroundColor: tooltipBg,
+            titleColor: textColor,
+            bodyColor: textColor,
+            borderColor: gridColor
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: false
+      }
+
+      switch (chart.type) {
+        case 'pie':
+          data = {
+            labels: ['Rojo', 'Azul', 'Amarillo'],
+            datasets: [{
+              data: [300, 50, 100],
+              backgroundColor: ['#f87171', '#60a5fa', '#facc15']
+            }]
+          }
+          break
+
+        case 'doughnut':
+          data = {
+            labels: ['Becados', 'No Becados'],
+            datasets: [{
+              data: [70, 30],
+              backgroundColor: ['#34d399', '#f87171']
+            }]
+          }
+          break
+
+        case 'bar':
+          data = {
+            labels: ['Carrera A', 'Carrera B', 'Carrera C'],
+            datasets: [{
+              label: 'Estudiantes',
+              data: [120, 80, 150],
+              backgroundColor: '#60a5fa'
+            }]
+          }
+          options.scales = {
+            x: { 
+              ticks: { color: textColor },
+              grid: { color: gridColor }
+            },
+            y: { 
+              ticks: { color: textColor },
+              grid: { color: gridColor }
+            }
+          }
+          break
+
+        case 'radar':
+          data = {
+            labels: ['Infraestructura', 'Docencia', 'Servicios', 'Cultura', 'Ambiente'],
+            datasets: [{
+              label: 'Nivel de satisfacción',
+              data: [80, 90, 70, 60, 85],
+              backgroundColor: 'rgba(96,165,250,0.4)',
+              borderColor: '#60a5fa',
+              pointBackgroundColor: '#3b82f6'
+            }]
+          }
+          options.scales = {
+            r: {
+              grid: { color: gridColor },
+              pointLabels: { color: textColor },
+              angleLines: { color: gridColor },
+              ticks: { color: textColor }
+            }
+          }
+          break
+      }
+      if (chartInstances.value[chart.type]) {
+        chartInstances.value[chart.type].destroy()
+      }
+
+      chartInstances.value[chart.type] = new Chart(ctx, {
+        type: chart.type,
+        data,
+        options
+      })
+    })
+  }, 100) 
+})
+
+onBeforeUnmount(() => {
+  Object.values(chartInstances.value).forEach(instance => {
+    if (instance && typeof instance.destroy === 'function') {
+      instance.destroy()
+    }
+  })
+})
 </script>
-
 
 <style scoped>
 .help-charts {
@@ -73,12 +292,20 @@ const getImage = (type) => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
+.title-container {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #F9FAFB;
+  border-radius: 0.75rem;
+  border: 1px solid #E5E7EB;
+  text-align: center;
+}
+
 .help-charts h2 {
   color: #1F2937;
   font-weight: 700;
   font-size: 2rem;
-  margin-bottom: 2rem;
-  text-align: center;
+  margin-bottom: 0;
   position: relative;
   padding-bottom: 1rem;
 }
@@ -119,32 +346,33 @@ const getImage = (type) => {
   border: 1px solid #E5E7EB;
 }
 
-.chart-image {
-  display: block;
+.chart-container {
+  width: 100%;
+  max-width: 400px;
+  height: 300px;
   margin: 1rem auto;
-  max-width: 100%;
-  width: 350px;
-  background: #ffffff;
-  border: 1px solid #E5E7EB;
-  border-radius: 0.5rem;
-  height: auto;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
-
 
 @media (max-width: 500px) {
   .help-charts {
-    padding: 0.5rem;
+    padding: 1rem;
   }
-  .chart-image {
-    width: 100%;
+  
+  .chart-container {
+    height: 250px;
     max-width: 100%;
   }
+  
   .help-charts h2 {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
   }
+  
   .chart-section h3 {
-    font-size: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  .chart-section p {
+    font-size: 0.9rem;
   }
 }
 </style>
