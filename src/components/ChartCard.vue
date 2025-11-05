@@ -4,6 +4,8 @@ import Chart from 'primevue/chart';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
 import Dialog from 'primevue/dialog';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
 import { Icon } from '@iconify/vue';
 import Card from 'primevue/card';
 
@@ -23,6 +25,7 @@ const isDialogVisible = ref(false);
 const dialogChartKey = ref(0);
 const chartContainerRef = ref(null);
 const isHelpDialogVisible = ref(false);
+const showDataTable = ref(false);
 
 const openDialog = () => {
   isDialogVisible.value = true;
@@ -113,6 +116,57 @@ const chartOptions = computed(() => ({
     arc: { borderWidth: 1, borderColor: '#fff' }
   } : {}
 }));
+
+// Datos formateados para la tabla
+const formattedData = computed(() => {
+  if (!props.chartData || !props.chartData.labels || !props.chartData.datasets) {
+    return [];
+  }
+
+  const labels = props.chartData.labels;
+  const data = props.chartData.datasets[0]?.data || [];
+
+  return labels.map((label, index) => ({
+    label: label,
+    value: data[index] || 0,
+    percentage: calculatePercentage(data[index] || 0)
+  }));
+});
+
+// Estadísticas calculadas
+const chartStats = computed(() => {
+  if (!props.chartData || !props.chartData.datasets) {
+    return { total: 0, average: 0, max: 0, min: 0 };
+  }
+
+  const data = props.chartData.datasets[0]?.data || [];
+  const total = data.reduce((sum, value) => sum + (value || 0), 0);
+  const average = data.length > 0 ? total / data.length : 0;
+  const max = data.length > 0 ? Math.max(...data) : 0;
+  const min = data.length > 0 ? Math.min(...data) : 0;
+
+  return {
+    total,
+    average,
+    max,
+    min
+  };
+});
+
+// Funciones auxiliares
+function formatNumber(value) {
+  if (typeof value !== 'number') return value;
+  return new Intl.NumberFormat('es-ES', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
+function calculatePercentage(value) {
+  if (!props.chartData || !props.chartData.datasets) return 0;
+  const total = chartStats.value.total;
+  return total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+}
 
 // Opciones del chart para el dialog
 // Computed para el tamaño del diálogo según el tipo de gráfica
@@ -243,6 +297,9 @@ function exportDialogChartPNG() {
             <div class="chart-header">
                 <span class="chart-title">{{ title }}</span>
                 <div class="options-buttons">
+                  <Button aria-label="Toggle Data Table" size="small" text @click="showDataTable = !showDataTable">
+                    <Icon :icon="showDataTable ? 'mdi:chart-bar' : 'mdi:table'" width="28" height="28" style="color: #000000"/>
+                  </Button>
                   <Button aria-label="Help HQ" size="small" text  @click="helpDialog()">
                     <Icon icon="mdi-light:help" width="28" height="28" style="color: #000000"/>
                   </Button>
@@ -253,13 +310,64 @@ function exportDialogChartPNG() {
             </div>
         </template>
         <template #content>
-            <div ref="chartContainerRef" class="chart-container" @click="openDialog">
+            <div v-if="!showDataTable" ref="chartContainerRef" class="chart-container" @click="openDialog">
                 <Chart 
                     :key="chartKey"
                     :type="selectedType" 
                     :data="chartData" 
                     :options="chartOptions" 
                 />
+            </div>
+            
+            <!-- Tabla de datos -->
+            <div v-else class="data-table-container">
+                <div class="stats-section">
+                    <h4 class="stats-title">Estadísticas</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">{{ formatNumber(chartStats.total) }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Promedio:</span>
+                            <span class="stat-value">{{ formatNumber(chartStats.average) }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Máximo:</span>
+                            <span class="stat-value">{{ formatNumber(chartStats.max) }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Mínimo:</span>
+                            <span class="stat-value">{{ formatNumber(chartStats.min) }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-section">
+                    <DataTable 
+                        :value="formattedData" 
+                        size="small" 
+                        class="compact-table"
+                        :scrollable="true"
+                        scrollHeight="200px"
+                    >
+                        <Column field="label" header="Categoría" class="category-column">
+                            <template #body="slotProps">
+                                <span class="category-text">{{ slotProps.data.label }}</span>
+                            </template>
+                        </Column>
+                        <Column field="value" header="Valor" dataType="numeric" class="value-column">
+                            <template #body="slotProps">
+                                <span class="value-text">{{ formatNumber(slotProps.data.value) }}</span>
+                            </template>
+                        </Column>
+                        <Column field="percentage" header="%" class="percentage-column">
+                            <template #body="slotProps">
+                                <span class="percentage-text">{{ slotProps.data.percentage }}%</span>
+                            </template>
+                        </Column>
+                    </DataTable>
+                </div>
             </div>
         </template>
         <template #footer>
@@ -878,6 +986,146 @@ hr {
   
   .tip-item {
     font-size: 0.85rem;
+  }
+}
+
+/* Estilos para la tabla de datos */
+.data-table-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.stats-section {
+  flex-shrink: 0;
+}
+
+.stats-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  background: #F8FAFC;
+  border-radius: 6px;
+  border: 1px solid #E2E8F0;
+}
+
+.stat-label {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.stat-value {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.table-section {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.compact-table {
+  height: 100%;
+}
+
+.compact-table :deep(.p-datatable-wrapper) {
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  height: 100%;
+}
+
+.compact-table :deep(.p-datatable-thead > tr > th) {
+  background: #F1F5F9;
+  color: #475569;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.compact-table :deep(.p-datatable-tbody > tr > td) {
+  padding: 0.4rem 0.75rem;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.compact-table :deep(.p-datatable-tbody > tr:hover) {
+  background: #F8FAFC;
+}
+
+.category-text {
+  color: #374151;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+  display: block;
+}
+
+.value-text {
+  color: #059669;
+  font-weight: 600;
+  text-align: right;
+  display: block;
+}
+
+.percentage-text {
+  color: #7C3AED;
+  font-weight: 600;
+  text-align: center;
+  display: block;
+}
+
+.compact-table :deep(.value-column) {
+  text-align: right;
+}
+
+.compact-table :deep(.percentage-column) {
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .compact-table :deep(.p-datatable-thead > tr > th),
+  .compact-table :deep(.p-datatable-tbody > tr > td) {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
+  }
+  
+  .category-text {
+    max-width: 80px;
   }
 }
 </style>
