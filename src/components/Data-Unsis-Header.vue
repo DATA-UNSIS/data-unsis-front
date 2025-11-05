@@ -3,8 +3,18 @@ import {ref, watch, onMounted} from "vue";
 import {Icon} from "@iconify/vue";
 import MultiSelect from 'primevue/multiselect';
 import Button from 'primevue/button';
+import Toast from 'primevue/toast';
+import { useToast } from 'primevue/usetoast';
+import { usePdfExport } from '../composables/usePdfExport.js';
 
 const degreeOptions = [];
+
+// Instancias de composables
+const toast = useToast();
+const { exportChartsToPDF } = usePdfExport();
+
+// Estado para el botón de PDF
+const isGeneratingPDF = ref(false);
 
 // Opciones para los dropdowns
 const carreras = ref([
@@ -85,6 +95,55 @@ onMounted(() => {
   emitFilters();
 });
 
+// Función para generar PDF de los gráficos actuales
+const generatePDF = async () => {
+  if (isGeneratingPDF.value) return;
+  
+  isGeneratingPDF.value = true;
+  
+  try {
+    // Mostrar notificación de inicio
+    toast.add({
+      severity: 'info',
+      summary: 'Generando PDF',
+      detail: 'Procesando los gráficos visibles, por favor espere...',
+      life: 3000
+    });
+
+    // Preparar filtros actuales para incluir en el PDF
+    const currentFilters = {
+      carreras: selectedCarrera.value.length === carreras.value.length ? null : selectedCarrera.value,
+      semestres: selectedDegree.value.length === semestres.value.length ? null : selectedDegree.value
+      //sexo: null // Por ahora null, se puede extender más adelante
+    };
+
+    // Generar el PDF con los filtros actuales
+    const result = await exportChartsToPDF(currentFilters);
+    
+    if (result.success) {
+      toast.add({
+        severity: 'success',
+        summary: 'PDF Generado Exitosamente',
+        detail: `${result.chartsCount} gráficos en ${result.pagesCount} páginas\n Archivo: ${result.fileName}`,
+        life: 6000
+      });
+    } else {
+      throw new Error(result.message);
+    }
+    
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error al Generar PDF',
+      detail: error.message || 'No se pudo generar el PDF. Verifique que haya gráficos visibles en pantalla.',
+      life: 5000
+    });
+  } finally {
+    isGeneratingPDF.value = false;
+  }
+};
+
 const prop = defineProps<{
     isStart: boolean;
 }>();
@@ -124,13 +183,26 @@ const prop = defineProps<{
       </div>
 
       <div class="flex items-end" v-if="isStart">
-        <Button class="primary-button w-40 h-14 max-md:w-16">
-          <Icon icon="material-symbols-light:download-rounded" width="30" height="30" />
-          Guardar PDF
+        <Button 
+          class="primary-button w-40 h-14 max-md:w-16 disabled:opacity-50"
+          :disabled="isGeneratingPDF"
+          @click="generatePDF"
+        >
+          <Icon 
+            :icon="isGeneratingPDF ? 'material-symbols-light:hourglass-top-rounded' : 'material-symbols-light:download-rounded'" 
+            width="30" 
+            height="30" 
+            :class="{ 'animate-spin': isGeneratingPDF }"
+          />
+          <span class="max-md:hidden ml-2">
+            {{ isGeneratingPDF ? 'Generando...' : 'Guardar PDF' }}
+          </span>
         </Button>
       </div>
     </div>
   </div>
+  
+  <Toast />
 </template>
 
 <style scoped>
@@ -187,5 +259,30 @@ const prop = defineProps<{
 
 .primary-button:active {
   transform: translateY(0);
+}
+
+/* Animación para el icono de carga */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Estilos para el estado deshabilitado del botón */
+.disabled\:opacity-50:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Espaciado para el texto del botón */
+.ml-2 {
+  margin-left: 0.5rem;
 }
 </style>
