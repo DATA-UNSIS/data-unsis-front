@@ -115,6 +115,16 @@ const chartOptions = computed(() => ({
 }));
 
 // Opciones del chart para el dialog
+// Computed para el tamaño del diálogo según el tipo de gráfica
+const dialogSize = computed(() => {
+  const isPieChart = selectedType.value === 'pie' || selectedType.value === 'doughnut';
+  return {
+    width: isPieChart ? '70vw' : '90vw',
+    maxWidth: isPieChart ? '600px' : '1000px',
+    height: isPieChart ? '70vh' : '80vh'
+  };
+});
+
 const dialogChartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: true,
@@ -276,7 +286,10 @@ function exportDialogChartPNG() {
         v-model:visible="isDialogVisible" 
         :header="title"
         modal
-        :style="{ width: '90vw', maxWidth: '1000px' }"
+        :style="{ 
+          width: dialogSize.width, 
+          maxWidth: dialogSize.maxWidth 
+        }"
         :dismissable-mask="true"
         :closable="true"
         class="chart-dialog"
@@ -292,7 +305,13 @@ function exportDialogChartPNG() {
                 
             </div>
         </template>
-        <div class="dialog-chart-container">
+        <div 
+            class="dialog-chart-container" 
+            :class="{ 
+              'pie-chart-container': selectedType === 'pie' || selectedType === 'doughnut',
+              'bar-chart-container': selectedType === 'bar' || selectedType === 'line'
+            }"
+        >
             <Chart 
                 :key="dialogChartKey"
                 :type="selectedType" 
@@ -614,6 +633,22 @@ hr {
   justify-content: stretch;
 }
 
+/* Estilos específicos para gráficas de pastel en el diálogo */
+.dialog-chart-container.pie-chart-container {
+  height: 50vh;
+  min-height: 350px;
+  max-height: 500px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estilos específicos para gráficas de barras en el diálogo */
+.dialog-chart-container.bar-chart-container {
+  height: 60vh;
+  min-height: 400px;
+  max-height: 600px;
+}
+
 .dialog-chart-container :deep(.p-chart) {
   width: 100% ;
   height: 100%;
@@ -648,6 +683,18 @@ hr {
   .dialog-chart-container {
     height: 50vh;
     min-height: 300px;
+  }
+  
+  .dialog-chart-container.pie-chart-container {
+    height: 45vh;
+    min-height: 280px;
+    max-height: 400px;
+  }
+  
+  .dialog-chart-container.bar-chart-container {
+    height: 50vh;
+    min-height: 320px;
+    max-height: 450px;
   }
 }
 

@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 
 const router = useRouter();
+const showPassword = ref(false);
 
 function login() {
   console.log('Iniciar sesión');
   router.push('/alumnos');
+}
+
+function togglePasswordVisibility() {
+  showPassword.value = !showPassword.value;
 }
 </script>
 
@@ -29,8 +35,15 @@ function login() {
           <div class="form-group">
             <label for="contrasena">Contraseña</label>
             <div class="password-input">
-              <input type="password" id="contrasena" name="contrasena" placeholder="Ingresa tu contraseña" />
-              <Icon icon="mdi:eye-off" class="eye-icon" />
+              <input 
+                :type="showPassword ? 'text' : 'password'" 
+                id="contrasena" 
+                name="contrasena" 
+                placeholder="Ingresa tu contraseña" 
+              />
+              <Button class="eye-icon" variant="text" @click="togglePasswordVisibility">
+                <Icon :icon="showPassword ? 'mdi:eye' : 'mdi:eye-off'" class="eye-icon" />
+              </Button>
             </div>
           </div>
           
