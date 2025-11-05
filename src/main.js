@@ -9,6 +9,9 @@ import router from "./router";
 import { Icon } from "@iconify/vue";
 import ToastService from 'primevue/toastservice';
 
+// Configurar iconos para uso offline
+import './utils/iconsSetup.js'
+
 // Import Chart.js components
 import {
     Chart as ChartJS,

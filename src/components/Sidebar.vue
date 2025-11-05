@@ -59,7 +59,7 @@
           </li>
           <li class="nav-item">
             <router-link to="/alumnos/preguntas-personalizadas" class="nav-link">
-              <Icon icon="mdi:head-question-outline" class="nav-icon"/>
+              <Icon icon="mdi:comment-help-outline" class="nav-icon"/>
               <div class="grid grid-rows-2">
                 <span class="nav-text">Preguntas Personalizadas</span>
                 <span class="nav-subtext">Respuestas del cuestionario específico.</span>

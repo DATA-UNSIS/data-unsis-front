@@ -8,6 +8,9 @@ function login() {
   console.log('Iniciar sesión');
   router.push('/alumnos');
 }
+function showPassword() {
+  const passwordInput = document.getElementById('contrasena');
+}
 </script>
 
 <template>
@@ -30,7 +33,9 @@ function login() {
             <label for="contrasena">Contraseña</label>
             <div class="password-input">
               <input type="password" id="contrasena" name="contrasena" placeholder="Ingresa tu contraseña" />
-              <Icon icon="mdi:eye-off" class="eye-icon" />
+              <Button class="eye-icon" variant="text" @click="showPassword()">
+                <Icon icon="mdi:eye-off" class="eye-icon" />
+              </Button>
             </div>
           </div>
           
