@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { Icon } from '@iconify/vue'
 import HotMap from '../../components/HotMap.vue'
+import { statsApi } from '../../services/statsApi.js'
 
-// Variables con datos ficticios
-const totalStudents = ref(98)
-const maleStudents = ref(82)
-const femaleStudents = ref(16)
-const studentsWithDisability = ref(1)
-const indigenousLanguageSpeakers = ref(4)
-const studentsWithMathPaternity = ref(0) // "Ningún alumno"
-const nonMiahuatlanOrigin = ref(43)
+// Variables para los datos del dashboard (basados en la respuesta de la API)
+const totalStudents = ref(0)
+const maleStudents = ref(0)
+const femaleStudents = ref(0)
+const studentsWithDisability = ref(0)
+const indigenousLanguageSpeakers = ref(0)
+const studentsWithMathPaternity = ref(0)
+const nonMiahuatlanOrigin = ref(0)
+
+// Estado de carga
+const isLoading = ref(false)
+const error = ref(null)
 
 // Switch para selección múltiple
 const multipleSelection = ref(false)
@@ -66,10 +71,48 @@ const toggleCareer = (careerId: number) => {
 }
 
 // Función para consultar datos (automática)
-const consultData = () => {
-  console.log('Carreras seleccionadas:', selectedCareers.value)
-  // Aquí se implementará la llamada a la API automáticamente
+const consultData = async () => {
+  if (selectedCareers.value.length === 0) return
+  
+  try {
+    isLoading.value = true
+    error.value = null
+    
+    // Obtener solo los nombres de las carreras seleccionadas
+    const selectedCareerNames = selectedCareers.value.map(career => career.name)
+    console.log('Consultando datos para carreras:', selectedCareerNames)
+    
+    // Llamar a la API
+    const result = await statsApi.getDashboardData(selectedCareerNames)
+    
+    if (result.success) {
+      // Mapear los datos de la respuesta a las variables del componente
+      const data = result.data
+      totalStudents.value = data.totalAlumnos || 0
+      maleStudents.value = data.hombres || 0
+      femaleStudents.value = data.mujeres || 0
+      studentsWithDisability.value = data.discapacidad || 0
+      indigenousLanguageSpeakers.value = data.lenguaIndigena || 0
+      studentsWithMathPaternity.value = data.maternidadPaternidad || 0
+      nonMiahuatlanOrigin.value = data.noOriginarios || 0
+    } else {
+      error.value = result.error
+      console.error('Error al obtener datos del dashboard:', result.error)
+    }
+  } catch (err) {
+    error.value = 'Error al consultar los datos'
+    console.error('Error en consultData:', err)
+  } finally {
+    isLoading.value = false
+  }
 }
+
+// Cargar datos inicial al montar el componente
+onMounted(() => {
+  if (selectedCareers.value.length > 0) {
+    consultData()
+  }
+})
 </script>
 
 <template>
@@ -124,37 +167,52 @@ const consultData = () => {
             <span v-else>{{ selectedCareers.length }} Carreras Seleccionadas</span>
           </h3>
           
-          <div class="stats-grid">
-            <div class="stat-item">
-              <span class="stat-number">{{ totalStudents }}</span>
-              <span class="stat-label">alumnos</span>
-            </div>
+          <!-- Estado de carga -->
+          <div v-if="isLoading" class="loading-state">
+            <Icon icon="mdi:loading" width="32" height="32" class="loading-icon" />
+            <span>Cargando datos...</span>
           </div>
+          
+          <!-- Estado de error -->
+          <div v-else-if="error" class="error-state">
+            <Icon icon="mdi:alert-circle" width="32" height="32" class="error-icon" />
+            <span>{{ error }}</span>
+          </div>
+          
+          <!-- Datos -->
+          <div v-else>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-number">{{ totalStudents }}</span>
+                <span class="stat-label">alumnos</span>
+              </div>
+            </div>
 
-          <div class="detailed-stats">
-            <div class="stat-row">
-              <span class="stat-description">Hombres:</span>
-              <span class="stat-value">{{ maleStudents }} alumnos</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-description">Mujeres:</span>
-              <span class="stat-value">{{ femaleStudents }} alumnos</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-description">Padecimiento de alguna discapacidad:</span>
-              <span class="stat-value">{{ studentsWithDisability }} alumno</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-description">Hablantes de alguna lengua indígena:</span>
-              <span class="stat-value">{{ indigenousLanguageSpeakers }} alumnos</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-description">Ejercimiento de maternidad/paternidad:</span>
-              <span class="stat-value">{{ studentsWithMathPaternity === 0 ? 'Ningún alumno' : `${studentsWithMathPaternity} alumnos` }}</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-description">No originarios de Miahuatlán:</span>
-              <span class="stat-value">{{ nonMiahuatlanOrigin }} alumnos</span>
+            <div class="detailed-stats">
+              <div class="stat-row">
+                <span class="stat-description">Hombres:</span>
+                <span class="stat-value">{{ maleStudents }} alumnos</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-description">Mujeres:</span>
+                <span class="stat-value">{{ femaleStudents }} alumnos</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-description">Padecimiento de alguna discapacidad:</span>
+                <span class="stat-value">{{ studentsWithDisability }} alumno</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-description">Hablantes de alguna lengua indígena:</span>
+                <span class="stat-value">{{ indigenousLanguageSpeakers }} alumnos</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-description">Ejercimiento de maternidad/paternidad:</span>
+                <span class="stat-value">{{ studentsWithMathPaternity === 0 ? 'Ningún alumno' : `${studentsWithMathPaternity} alumnos` }}</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-description">No originarios de Miahuatlán:</span>
+                <span class="stat-value">{{ nonMiahuatlanOrigin }} alumnos</span>
+              </div>
             </div>
           </div>
         </div>
@@ -436,6 +494,48 @@ const consultData = () => {
 .stat-value {
   font-weight: 600;
   color: #2D6849;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: #6B7280;
+  font-size: 1rem;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+  color: #2D6849;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: #DC2626;
+  font-size: 1rem;
+  text-align: center;
+  background: #FEF2F2;
+  border-radius: 0.75rem;
+  border: 1px solid #FECACA;
+}
+
+.error-icon {
+  color: #DC2626;
 }
 
 @media (max-width: 1024px) {
