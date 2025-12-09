@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 
 const router = useRouter();
+const showPassword = ref(false);
 
 function login() {
   console.log('Iniciar sesión');
   router.push('/alumnos');
+}
+
+function togglePasswordVisibility() {
+  showPassword.value = !showPassword.value;
 }
 </script>
 
@@ -29,20 +35,16 @@ function login() {
           <div class="form-group">
             <label for="contrasena">Contraseña</label>
             <div class="password-input">
-              <input type="password" id="contrasena" name="contrasena" placeholder="Ingresa tu contraseña" />
-              <Icon icon="mdi:eye-off" class="eye-icon" />
+              <input 
+                :type="showPassword ? 'text' : 'password'" 
+                id="contrasena" 
+                name="contrasena" 
+                placeholder="Ingresa tu contraseña" 
+              />
+              <Button class="eye-icon" variant="text" @click="togglePasswordVisibility">
+                <Icon :icon="showPassword ? 'mdi:eye' : 'mdi:eye-off'" class="eye-icon" />
+              </Button>
             </div>
-          </div>
-          
-          <div class="links">
-            <a href="#" class="forgot-password">
-              <Icon icon="mdi:help-circle-outline" class="link-icon" />
-              ¿Olvidaste la contraseña?
-            </a>
-            <a href="#" class="register-link">
-              <Icon icon="mdi:account-plus-outline" class="link-icon" />
-              Registrarse
-            </a>
           </div>
           
           <div class="button-container">
@@ -61,7 +63,7 @@ function login() {
 </template>
 
 <style scoped>
-/* Container principal para centrado perfecto */
+/* Container principal*/
 .login-container {
   min-height: 100vh;
   display: flex;
@@ -267,10 +269,10 @@ input[type="password"]::placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   padding: 40px;
   overflow: hidden;
   position: relative;
+  border-radius: 25px;
 }
 
 .login-image::before {
@@ -280,20 +282,21 @@ input[type="password"]::placeholder {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, rgba(45, 104, 73, 0.05) 0%, rgba(45, 104, 73, 0.1) 100%);
   z-index: 1;
 }
 
 .login-image img {
-  width: 100%;
-  height: 100%;
+  width: 90%;
+  height: auto;
   min-height: 500px;
   max-height: 600px;
-  object-fit: contain;
-  border-radius: 15px;
+  object-fit: cover;
+  border-radius: 25px;
   position: relative;
   z-index: 2;
   transition: transform 0.3s ease;
+  margin: 0 auto;
+  display: block;
 }
 
 .login-image img:hover {

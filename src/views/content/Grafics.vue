@@ -98,7 +98,10 @@ function separateResponse() {
         type: 'bar',
         possibleGrafics: ['bar', 'pie', 'doughnut', 'line'],
         backgroundColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-        borderColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+        borderColors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+        Purpose: 'Gráfico generado automáticamente para mostrar la distribución de datos.',
+        Interpretation: 'Los valores más altos representan categorías con mayor frecuencia o importancia.',
+        Application: 'Utiliza esta información para tomar decisiones basadas en los datos presentados.'
       };
     }
     
@@ -126,7 +129,10 @@ function separateResponse() {
       possibleTypes: enumProps.possibleGrafics?.map(type => ({ 
         name: getTypeDisplayName(type), 
         value: type 
-      })) || []
+      })) || [],
+      Purpose: enumProps.Purpose,
+      Interpretation: enumProps.Interpretation,
+      Application: enumProps.Application
     };
     
     newChartList.push(chartInfo);
@@ -156,6 +162,9 @@ function getTypeDisplayName(type) {
         :chartData="chart.chartData"
         :type="chart.type"
         :posibleTypes="chart.possibleTypes"
+        :Purpose="chart.Purpose"
+        :Interpretation="chart.Interpretation"
+        :Application="chart.Application"
       />
     </div>
 </template>
@@ -168,7 +177,7 @@ function getTypeDisplayName(type) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1.5rem;
-  background-color: #2D6849;
+  background-color: transparent;
   min-height: 100vh;
   image-rendering: crisp-edges;
   -webkit-font-smoothing: antialiased;
@@ -210,14 +219,14 @@ function getTypeDisplayName(type) {
 
 @media (min-width: 1200px) {
   .content-container {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     max-width: 1400px;
   }
 }
 
 @media (min-width: 992px) and (max-width: 1199px) {
   .content-container {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     padding: 1.75rem;
     gap: 1.25rem;
   }
@@ -277,7 +286,7 @@ function getTypeDisplayName(type) {
 @media (min-width: 1600px) {
   .content-container {
     max-width: 1600px;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
   }
 }

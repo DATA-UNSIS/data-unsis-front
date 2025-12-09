@@ -1,15 +1,18 @@
 /* src/assets/theme.css */
 
-/* TEMA VERDE BANDERA */
+/* TEMA VERDE BANDERA - Actualizado para mejor UX */
 [data-theme="theme1"] {
-    --color-buttom: #275B3B;
-    --color-back: #2D6849;
+    --color-buttom: #2D6849;
+    --color-back: #F9FAFB;
     --color-primary: #2D6849;
     --color-secondary: #ffffff;
-    --color-tertiary: #5F7D6F;
-    --color-text: #275B3B;
-    --color-plain-text: #000000;
-    --color-shadow: #13442A;
+    --color-tertiary: #6B7280;
+    --color-text: #1F2937;
+    --color-plain-text: #4B5563;
+    --color-shadow: #1e4529;
+    --color-accent: #2D6849;
+    --color-surface: #ffffff;
+    --color-border: #E5E7EB;
 }
 
 /* TEMA VERDE LIMÓN */

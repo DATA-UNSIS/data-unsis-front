@@ -4,14 +4,20 @@ import Chart from 'primevue/chart';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
 import Dialog from 'primevue/dialog';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
 import { Icon } from '@iconify/vue';
 import Card from 'primevue/card';
+import html2canvas from 'html2canvas';
 
 const props = defineProps({
   title: { type: String, required: true },
   chartData: { type: Object, required: true },
   type: { type: String, required: true },
-  posibleTypes: { type: Array, required: true }
+  posibleTypes: { type: Array, required: true },
+  Purpose: { type: String, required: true },
+  Interpretation: { type: String, required: true },
+  Application: { type: String, required: true }
 });
 
 const selectedType = ref(props.type);
@@ -19,6 +25,9 @@ const chartKey = ref(0);
 const isDialogVisible = ref(false);
 const dialogChartKey = ref(0);
 const chartContainerRef = ref(null);
+const isHelpDialogVisible = ref(false);
+const showDataTable = ref(false);
+const isExportDialogVisible = ref(false);
 
 const openDialog = () => {
   isDialogVisible.value = true;
@@ -26,6 +35,10 @@ const openDialog = () => {
   nextTick(() => {
     dialogChartKey.value++;
   });
+};
+
+const helpDialog = () => {
+  isHelpDialogVisible.value = true;
 };
 
 watch(selectedType, async () => {
@@ -106,7 +119,68 @@ const chartOptions = computed(() => ({
   } : {}
 }));
 
+// Datos formateados para la tabla
+const formattedData = computed(() => {
+  if (!props.chartData || !props.chartData.labels || !props.chartData.datasets) {
+    return [];
+  }
+
+  const labels = props.chartData.labels;
+  const data = props.chartData.datasets[0]?.data || [];
+
+  return labels.map((label, index) => ({
+    label: label,
+    value: data[index] || 0,
+    percentage: calculatePercentage(data[index] || 0)
+  }));
+});
+
+// Estadísticas calculadas
+const chartStats = computed(() => {
+  if (!props.chartData || !props.chartData.datasets) {
+    return { total: 0, average: 0, max: 0, min: 0 };
+  }
+
+  const data = props.chartData.datasets[0]?.data || [];
+  const total = data.reduce((sum, value) => sum + (value || 0), 0);
+  const average = data.length > 0 ? total / data.length : 0;
+  const max = data.length > 0 ? Math.max(...data) : 0;
+  const min = data.length > 0 ? Math.min(...data) : 0;
+
+  return {
+    total,
+    average,
+    max,
+    min
+  };
+});
+
+// Funciones auxiliares
+function formatNumber(value) {
+  if (typeof value !== 'number') return value;
+  return new Intl.NumberFormat('es-ES', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
+function calculatePercentage(value) {
+  if (!props.chartData || !props.chartData.datasets) return 0;
+  const total = chartStats.value.total;
+  return total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+}
+
 // Opciones del chart para el dialog
+// Computed para el tamaño del diálogo según el tipo de gráfica
+const dialogSize = computed(() => {
+  const isPieChart = selectedType.value === 'pie' || selectedType.value === 'doughnut';
+  return {
+    width: isPieChart ? '70vw' : '90vw',
+    maxWidth: isPieChart ? '600px' : '1000px',
+    height: isPieChart ? '70vh' : '80vh'
+  };
+});
+
 const dialogChartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: true,
@@ -164,6 +238,16 @@ const dialogChartOptions = computed(() => ({
 }));
 
 function exportChartPNG() {
+  if (showDataTable.value) {
+    // Mostrar diálogo de opciones para tabla
+    isExportDialogVisible.value = true;
+  } else {
+    // Exportar gráfico como PNG (funcionalidad original)
+    exportChart();
+  }
+}
+
+function exportChart() {
   // Buscar el canvas específicamente dentro de este componente
   const chartElement = chartContainerRef.value?.querySelector('canvas');
   if (chartElement) {
@@ -185,11 +269,90 @@ function exportChartPNG() {
     tempCtx.drawImage(originalCanvas, 0, 0);
     const link = document.createElement('a');
     link.href = tempCanvas.toDataURL('image/png', 1.0);
-    link.download = `${props.title.replace(/\s+/g, '_').toLowerCase()}_hq.png`;
+    link.download = `${props.title.replace(/\s+/g, '_').toLowerCase()}_grafico.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }
+}
+
+async function exportDataTable() {
+  // Buscar el contenedor de la tabla de datos
+  const dataContainer = document.querySelector('.data-table-container');
+  if (dataContainer) {
+    try {
+      // Exportar PNG de la tabla
+      const canvas = await html2canvas(dataContainer, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: dataContainer.scrollWidth,
+        height: dataContainer.scrollHeight
+      });
+      
+      // Descargar PNG
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.download = `${props.title.replace(/\s+/g, '_').toLowerCase()}_datos.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+    } catch (error) {
+      console.error('Error al exportar la tabla:', error);
+    }
+  }
+}
+
+async function exportTableAsPNG() {
+  await exportDataTable();
+  isExportDialogVisible.value = false;
+}
+
+function exportTableAsCSV() {
+  exportCSV();
+  isExportDialogVisible.value = false;
+}
+
+function exportBothFormats() {
+  exportDataTable(); // Esto ya incluye el CSV internamente
+  exportCSV(); // Exportar CSV adicional por separado
+  isExportDialogVisible.value = false;
+}
+
+function exportCSV() {
+  const csvContent = generateCSVContent();
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = `${props.title.replace(/\s+/g, '_').toLowerCase()}_datos.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function generateCSVContent() {
+  let csv = 'Categoría,Valor,Porcentaje\n';
+  
+  // Agregar datos de la tabla
+  formattedData.value.forEach(row => {
+    const category = `"${row.label.replace(/"/g, '""')}"`;
+    const value = row.value;
+    const percentage = row.percentage;
+    csv += `${category},${value},${percentage}%\n`;
+  });
+  
+  // Agregar estadísticas al final
+  csv += '\nEstadísticas\n';
+  csv += `Total,${chartStats.value.total},\n`;
+  csv += `Promedio,${chartStats.value.average.toFixed(2)},\n`;
+  csv += `Máximo,${chartStats.value.max},\n`;
+  csv += `Mínimo,${chartStats.value.min},\n`;
+  
+  return csv;
 }
 
 // Exportar grafico del dialog
@@ -220,24 +383,83 @@ function exportDialogChartPNG() {
 
 <template>
 
-  <!-- Card con la gráfica mas grande -->
     <Card class="chart-card">
         <template #header>
             <div class="chart-header">
                 <span class="chart-title">{{ title }}</span>
-                <Button aria-label="Download" size="small" text @click="exportChartPNG()">
-                  <Icon icon="material-symbols-light:download-rounded" width="28" height="28"  style="color: #000000" />
-                </Button>
+                <div class="options-buttons">
+                  <Button aria-label="Toggle Data Table" size="small" text @click="showDataTable = !showDataTable">
+                    <Icon :icon="showDataTable ? 'mdi:chart-bar' : 'mdi:table'" width="28" height="28" style="color: #000000"/>
+                  </Button>
+                  <Button aria-label="Help HQ" size="small" text  @click="helpDialog()">
+                    <Icon icon="mdi-light:help" width="28" height="28" style="color: #000000"/>
+                  </Button>
+                  <Button aria-label="Download" size="small" text @click="exportChartPNG()">
+                    <Icon icon="material-symbols-light:download-rounded" width="28" height="28" style="color: #000000" />
+                  </Button>
+                </div>
             </div>
         </template>
         <template #content>
-            <div ref="chartContainerRef" class="chart-container" @click="openDialog">
+            <div v-if="!showDataTable" ref="chartContainerRef" class="chart-container" @click="openDialog">
                 <Chart 
                     :key="chartKey"
                     :type="selectedType" 
                     :data="chartData" 
                     :options="chartOptions" 
                 />
+            </div>
+            
+            <!-- Tabla de datos -->
+            <div v-else class="data-table-container">
+                <div class="stats-section">
+                    <h4 class="stats-title">Estadísticas</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Total:</span>
+                            <span class="stat-value">{{ formatNumber(chartStats.total) }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Promedio:</span>
+                            <span class="stat-value">{{ formatNumber(chartStats.average) }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Máximo:</span>
+                            <span class="stat-value">{{ formatNumber(chartStats.max) }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Mínimo:</span>
+                            <span class="stat-value">{{ formatNumber(chartStats.min) }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-section">
+                    <DataTable 
+                        :value="formattedData" 
+                        size="small" 
+                        class="compact-table"
+                        :scrollable="true"
+                        scrollHeight="200px"
+                        tableStyle="min-width: 100%"
+                    >
+                        <Column field="label" header="Categoría" class="category-column" style="width: 60%">
+                            <template #body="slotProps">
+                                <span class="category-text" :title="slotProps.data.label">{{ slotProps.data.label }}</span>
+                            </template>
+                        </Column>
+                        <Column field="value" header="Valor" dataType="numeric" class="value-column" style="width: 25%">
+                            <template #body="slotProps">
+                                <span class="value-text">{{ formatNumber(slotProps.data.value) }}</span>
+                            </template>
+                        </Column>
+                        <Column field="percentage" header="%" class="percentage-column" style="width: 15%">
+                            <template #body="slotProps">
+                                <span class="percentage-text">{{ slotProps.data.percentage }}%</span>
+                            </template>
+                        </Column>
+                    </DataTable>
+                </div>
             </div>
         </template>
         <template #footer>
@@ -264,20 +486,32 @@ function exportDialogChartPNG() {
         v-model:visible="isDialogVisible" 
         :header="title"
         modal
-        :style="{ width: '90vw', maxWidth: '1000px' }"
+        :style="{ 
+          width: dialogSize.width, 
+          maxWidth: dialogSize.maxWidth 
+        }"
         :dismissable-mask="true"
         :closable="true"
         class="chart-dialog"
     >
         <template #header>
             <div class="dialog-header">
-                <span>{{ title }}</span>
-                <Button aria-label="Download HQ" size="small" severity="secondary" @click="exportDialogChartPNG()">
-                  <Icon icon="material-symbols-light:download-rounded" width="30" height="30"  style="color: #000000" />
-                </Button>
+                <span class="align-center">{{ title }}</span>
+                  <div class="options-buttons">
+                    <Button aria-label="Download HQ" size="small" severity="secondary" @click="exportDialogChartPNG()">
+                      <Icon icon="material-symbols-light:download-rounded" width="30" height="30"  style="color: #000000" />
+                    </Button>
+                  </div>
+                
             </div>
         </template>
-        <div class="dialog-chart-container">
+        <div 
+            class="dialog-chart-container" 
+            :class="{ 
+              'pie-chart-container': selectedType === 'pie' || selectedType === 'doughnut',
+              'bar-chart-container': selectedType === 'bar' || selectedType === 'line'
+            }"
+        >
             <Chart 
                 :key="dialogChartKey"
                 :type="selectedType" 
@@ -286,9 +520,120 @@ function exportDialogChartPNG() {
             />
         </div>
     </Dialog>
+
+    <!-- Diálogo de opciones de exportación -->
+    <Dialog 
+        v-model:visible="isExportDialogVisible" 
+        header="Exportar Datos"
+        modal
+        :style="{ width: '400px' }"
+        :dismissable-mask="true"
+        :closable="true"
+        class="export-dialog"
+    >
+        <div class="export-options">
+            <p class="export-description">Selecciona el formato de exportación:</p>
+            
+            <div class="export-buttons">
+                <Button 
+                    @click="exportTableAsPNG()" 
+                    class="export-option-btn png-btn"
+                    icon="pi pi-image"
+                    label="Exportar como PNG"
+                    outlined
+                >
+                    <template #icon>
+                        <Icon icon="mdi:file-image-outline" width="20" height="20" />
+                    </template>
+                </Button>
+                
+                <Button 
+                    @click="exportTableAsCSV()" 
+                    class="export-option-btn csv-btn"
+                    icon="pi pi-file-excel"
+                    label="Exportar como CSV"
+                    outlined
+                >
+                    <template #icon>
+                        <Icon icon="mdi:file-delimited-outline" width="20" height="20" />
+                    </template>
+                </Button>
+                
+                <Button 
+                    @click="exportBothFormats()" 
+                    class="export-option-btn both-btn"
+                    label="Exportar Ambos"
+                    severity="secondary"
+                >
+                    <template #icon>
+                        <Icon icon="mdi:download-multiple" width="20" height="20" />
+                    </template>
+                </Button>
+            </div>
+            
+            <div class="export-info">
+                <small class="info-text">
+                    <Icon icon="mdi:information-outline" width="14" height="14" style="margin-right: 4px;" />
+                    PNG: Imagen visual de la tabla | CSV: Datos para análisis
+                </small>
+            </div>
+        </div>
+    </Dialog>
+
+    <!-- Diálogo con la información de ayuda-->
+    <Dialog
+        v-model:visible="isHelpDialogVisible" 
+        modal
+        :style="{ width: '80vw', maxWidth: '700px' }"
+        :dismissable-mask="true"
+        :closable="true"
+        class="help-dialog"
+    >
+        <template #header>
+            <div class="dialog-header help-dialog-header">
+                <span>{{ title }}</span>
+            </div>
+        </template>
+      <template #default>
+        <div class="help-content">
+          <div class="help-body">
+            <div class="help-section">
+              <div class="section-header">
+                <Icon icon="mdi:target" width="20" height="20" style="color: #059669"/>
+                <span class="section-title">Propósito del Gráfico</span>
+              </div>
+              <div class="help-description">
+                <p>{{ Purpose }}</p>
+              </div>
+            </div>
+            
+            <div class="help-section">
+              <div class="section-header">
+                <Icon icon="mdi:chart-line-variant" width="20" height="20" style="color: #3B82F6"/>
+                <span class="section-title">Cómo Interpretar</span>
+              </div>
+              <div class="help-description">
+                <p>{{ Interpretation }}</p>
+              </div>
+            </div>
+
+            <div class="help-section">
+              <div class="section-header">
+                <Icon icon="mdi:lightbulb-outline" width="20" height="20" style="color: #F59E0B"/>
+                <span class="section-title">Ejemplo Práctico</span>
+              </div>
+              <div class="help-description">
+                <p>{{ Application }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </Dialog>
 </template>
 
 <style scoped>
+
 .chart-card {
   height: 100%;
   width: 100%;
@@ -304,6 +649,14 @@ function exportDialogChartPNG() {
   display: flex;
   will-change: transform;
   image-rendering: crisp-edges;
+  background-color: #5fff87;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
+}
+
+.chart-card :deep(.p-card):hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .chart-card :deep(.p-card-body) {
@@ -311,17 +664,20 @@ function exportDialogChartPNG() {
   display: flex;
   flex-direction: column;
   padding: 0;
+  
 }
 
 .chart-card :deep(.p-card-header) {
-  padding: 0.5rem;
+  padding: 0.75rem;
   flex-shrink: 0;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #E5E7EB;
+  background: #F9FAFB;
+  background-color: #e6f6f4;
 }
 
 .chart-card :deep(.p-card-content) {
   flex: 1;
-  padding: 0.25rem;
+  padding: 0.5rem;
   display: flex;
   align-items: stretch;
   justify-content: stretch;
@@ -330,11 +686,14 @@ function exportDialogChartPNG() {
   position: relative;
   overflow: hidden;
   min-height: 0;
+  background: #ffffff;
 }
 
 .chart-card :deep(.p-card-footer) {
   padding: 0;
   flex-shrink: 0;
+  background: #F9FAFB;
+  border-top: 1px solid #E5E7EB;
 }
 
 .chart-header {
@@ -346,8 +705,8 @@ function exportDialogChartPNG() {
 .chart-title {
   font-size: 0.95rem;
   font-family: 'Montserrat', Arial, sans-serif;
-  font-weight: 500;
-  color: #1E1E1E;
+  font-weight: 600;
+  color: #1F2937;
   line-height: 1.2;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -414,13 +773,13 @@ function exportDialogChartPNG() {
 }
 
 .chart-footer {
-  padding: 0.5rem;
+  padding: 0.75rem;
 }
 
 hr {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.75rem 0;
   border: none;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid #E5E7EB;
 }
 
 .chart-controls {
@@ -433,7 +792,7 @@ hr {
 
 .chart-controls span {
   font-weight: 500;
-  color: #78877F;
+  color: #6B7280;
   white-space: nowrap;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -489,6 +848,12 @@ hr {
   padding: 1rem;
 }
 
+.chart-dialog :deep(.p-dialog-header) {
+  background-color: #e6f6f4;
+  padding: 1rem;
+  border-radius: 8px 8px 0 0;
+}
+
 .dialog-header {
   display: flex;
   justify-content: center;
@@ -500,13 +865,19 @@ hr {
 .dialog-header span {
   font-family: 'Montserrat', Arial, sans-serif;
   font-size: 18px;
-  color: #333;
-  font-weight: 500;
+  color: #1F2937;
+  font-weight: 600;
+}
+
+.dialog-header .options-buttons {
+  position: absolute;
+  right: 0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
 .dialog-header Button {
-  position: absolute;
-  right: 0;
   background: transparent;
   border-color: transparent;
 }
@@ -521,27 +892,43 @@ hr {
   justify-content: stretch;
 }
 
+/* Estilos específicos para gráficas de pastel en el diálogo */
+.dialog-chart-container.pie-chart-container {
+  height: 50vh;
+  min-height: 350px;
+  max-height: 500px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Estilos específicos para gráficas de barras en el diálogo */
+.dialog-chart-container.bar-chart-container {
+  height: 60vh;
+  min-height: 400px;
+  max-height: 600px;
+}
+
 .dialog-chart-container :deep(.p-chart) {
-  width: 100% !important;
-  height: 100% !important;
+  width: 100% ;
+  height: 100%;
   flex: 1;
-  display: flex !important;
+  display: flex;
   align-items: stretch;
   justify-content: stretch;
 }
 
 .dialog-chart-container :deep(.p-chart > div) {
-  width: 100% !important;
-  height: 100% !important;
-  flex: 1 !important;
-  display: flex !important;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  display: flex;
 }
 
 .dialog-chart-container :deep(canvas) {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   image-rendering: auto;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -555,6 +942,492 @@ hr {
   .dialog-chart-container {
     height: 50vh;
     min-height: 300px;
+  }
+  
+  .dialog-chart-container.pie-chart-container {
+    height: 45vh;
+    min-height: 280px;
+    max-height: 400px;
+  }
+  
+  .dialog-chart-container.bar-chart-container {
+    height: 50vh;
+    min-height: 320px;
+    max-height: 450px;
+  }
+}
+
+/* Estilos para el diálogo de ayuda */
+.help-dialog :deep(.p-dialog-content) {
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.help-dialog :deep(.p-dialog-header) {
+  background-color: #e6f6f4;
+  padding: 1.5rem;
+  border-radius: 12px 12px 0 0;
+}
+
+.help-dialog-header {
+  color: #1F2937;
+}
+
+.help-dialog-header span {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: #1F2937;
+}
+
+.help-content {
+  padding: 0;
+  background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+  border-radius: 5%;
+}
+
+.help-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 2rem 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.help-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+}
+
+.help-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.help-body {
+  padding: 1.5rem 2rem 2rem 2rem;
+}
+
+.help-section {
+  margin-bottom: 2rem;
+}
+
+.help-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #F3F4F6;
+}
+
+.section-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.help-description {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.help-description p {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #4B5563;
+  margin: 0;
+  text-align: justify;
+}
+
+.help-description :deep(strong) {
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.help-description :deep(em) {
+  font-style: italic;
+  color: #059669;
+  font-weight: 500;
+}
+
+.help-tips {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tip-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.9rem;
+  color: #4B5563;
+  border-bottom: 1px solid #F3F4F6;
+  transition: all 0.2s ease;
+}
+
+.tip-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.tip-item:hover {
+  color: #059669;
+  transform: translateX(4px);
+}
+
+.tip-item span {
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .help-dialog {
+    width: 95vw !important;
+  }
+  
+  .help-header {
+    padding: 1rem 1.5rem 0.75rem 1.5rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+  
+  .help-title {
+    font-size: 1.2rem;
+  }
+  
+  .help-body {
+    padding: 1rem 1.5rem 1.5rem 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1rem;
+  }
+  
+  .help-description,
+  .help-tips {
+    padding: 1rem;
+  }
+  
+  .tip-item {
+    font-size: 0.85rem;
+  }
+}
+
+/* Estilos para la tabla de datos */
+.data-table-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.stats-section {
+  flex-shrink: 0;
+}
+
+.stats-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  background: #F8FAFC;
+  border-radius: 6px;
+  border: 1px solid #E2E8F0;
+}
+
+.stat-label {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.stat-value {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.table-section {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.compact-table {
+  height: 100%;
+}
+
+.compact-table :deep(.p-datatable-wrapper) {
+  border-radius: 8px;
+  border: 1px solid #E2E8F0;
+  height: 100%;
+}
+
+.compact-table :deep(.p-datatable-thead > tr > th) {
+  background: #F1F5F9;
+  color: #475569;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.compact-table :deep(.p-datatable-tbody > tr > td) {
+  padding: 0.6rem 0.75rem;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #F1F5F9;
+  vertical-align: top;
+  line-height: 1.4;
+}
+
+.compact-table :deep(.p-datatable-tbody > tr:hover) {
+  background: #F8FAFC;
+}
+
+.category-text {
+  color: #374151;
+  font-weight: 500;
+  white-space: normal;
+  word-wrap: break-word;
+  word-break: break-word;
+  line-height: 1.3;
+  display: block;
+  min-height: 1.3em;
+  max-width: none;
+}
+
+.value-text {
+  color: #059669;
+  font-weight: 600;
+  text-align: right;
+  display: block;
+}
+
+.percentage-text {
+  color: #7C3AED;
+  font-weight: 600;
+  text-align: center;
+  display: block;
+}
+
+.compact-table :deep(.value-column) {
+  text-align: right;
+  width: 25%;
+}
+
+.compact-table :deep(.percentage-column) {
+  text-align: center;
+  width: 15%;
+}
+
+.compact-table :deep(.category-column) {
+  width: 60%;
+}
+
+.compact-table :deep(.category-column .p-column-header-content) {
+  width: 100%;
+}
+
+.compact-table :deep(.p-datatable-table) {
+  table-layout: fixed;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .compact-table :deep(.p-datatable-thead > tr > th),
+  .compact-table :deep(.p-datatable-tbody > tr > td) {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.4rem;
+  }
+  
+  .compact-table :deep(.category-column) {
+    width: 50%;
+  }
+  
+  .compact-table :deep(.value-column) {
+    width: 30%;
+  }
+  
+  .compact-table :deep(.percentage-column) {
+    width: 20%;
+  }
+  
+  .category-text {
+    font-size: 0.7rem;
+    line-height: 1.2;
+  }
+}
+
+/* Estilos para el diálogo de exportación */
+.export-dialog :deep(.p-dialog-content) {
+  padding: 1.5rem;
+}
+
+.export-dialog :deep(.p-dialog-header) {
+  background-color: #e6f6f4;
+  padding: 1rem 1.5rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.export-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.export-description {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1rem;
+  color: #374151;
+  margin: 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+.export-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 280px;
+}
+
+.export-option-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.export-option-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.png-btn {
+  border-color: #3B82F6;
+  color: #3B82F6;
+}
+
+.png-btn:hover {
+  background-color: #3B82F6;
+  color: white;
+}
+
+.csv-btn {
+  border-color: #059669;
+  color: #059669;
+}
+
+.csv-btn:hover {
+  background-color: #059669;
+  color: white;
+}
+
+.both-btn {
+  background-color: #6366F1;
+  color: white;
+  border-color: #6366F1;
+}
+
+.both-btn:hover {
+  background-color: #4F46E5;
+  border-color: #4F46E5;
+}
+
+.export-info {
+  width: 100%;
+  padding: 1rem;
+  background-color: #F8FAFC;
+  border-radius: 6px;
+  border: 1px solid #E2E8F0;
+}
+
+.info-text {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 0.8rem;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .export-dialog {
+    width: 95vw !important;
+  }
+  
+  .export-buttons {
+    max-width: 100%;
+  }
+  
+  .export-option-btn {
+    font-size: 0.85rem;
+    padding: 0.65rem 0.8rem;
   }
 }
 </style>

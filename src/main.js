@@ -7,6 +7,10 @@ import Aura from '@primeuix/themes/aura';
 import axios from "axios";
 import router from "./router";
 import { Icon } from "@iconify/vue";
+import ToastService from 'primevue/toastservice';
+
+// Configurar iconos para uso offline
+import './utils/iconsSetup.js'
 
 // Import Chart.js components
 import {
@@ -53,6 +57,7 @@ app.use(PrimeVue, {
 
 app.use(createPinia())
 app.use(router)
+app.use(ToastService)
 app.component('Icon', Icon);
 app.config.globalProperties.$http = axios
 

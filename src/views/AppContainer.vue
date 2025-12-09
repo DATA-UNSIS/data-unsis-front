@@ -1,31 +1,55 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { Icon } from '@iconify/vue';
 import Sidebar from '../components/Sidebar.vue';
 import DataUnsisHeader from "../components/Data-Unsis-Header.vue";
-import { header } from '@primeuix/themes/aura/accordion';
 
-// Estado reactivo para controlar la visibilidad del sidebar
-const isSidebarVisible = ref(true);
+const isInHomeRoute = ref(false);
+const route = useRoute();
 
-// Estado reactivo para los filtros
+watch(
+  () => route.path,
+  (newPath) => {
+    isInHomeRoute.value = !(newPath === '/alumnos' || newPath === '/alumnos/home' || newPath === '/alumnos/ayuda');
+  },
+  { immediate: true }
+);
+
 const filters = ref({
   carreras: null as string[] | null,
   semestres: null as string[] | null,
   sexo: null as string | null
 });
 
-// Función para toggle del sidebar
+const isSidebarVisible = ref(true);
+const isMobile = ref(false);
+
+const checkIfMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+  if (isMobile.value) {
+    isSidebarVisible.value = false;
+  } else {
+    if (!hasUserToggledSidebar.value) {
+      isSidebarVisible.value = true;
+    }
+  }
+};
+
+const hasUserToggledSidebar = ref(false);
+
 const toggleSidebar = () => {
+  hasUserToggledSidebar.value = true;
   isSidebarVisible.value = !isSidebarVisible.value;
 };
 
-// Detectar si es móvil y ocultar sidebar por defecto
 onMounted(() => {
-  const isMobile = window.innerWidth <= 768;
-  if (isMobile) {
-    isSidebarVisible.value = false;
-  }
+  checkIfMobile();
+  window.addEventListener('resize', checkIfMobile);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkIfMobile);
 });
 
 const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[] | null; sexo: string | null }) => {
@@ -36,39 +60,58 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
 </script>
 
 <template>
-  <div class="app-layout" :class="{ 'sidebar-hidden': !isSidebarVisible }">
-    <!-- Header -->
+  <div class="app-layout" :class="{ 'sidebar-collapsed': !isSidebarVisible }">
+    <!-- Overlay para móvil cuando el sidebar está visible -->
+    <div 
+      v-if="isMobile && isSidebarVisible" 
+      class="mobile-overlay"
+      @click="toggleSidebar"
+    ></div>
+
     <header class="header-area">
-      <!-- Botón toggle del sidebar -->
-      <button @click="toggleSidebar" class="sidebar-toggle-btn max-md:size-8">
-        <Icon :icon="isSidebarVisible ? 'mdi:menu-open' : 'mdi:menu'" />
-      </button>
-      <DataUnsisHeader :is-start="true" @filters-changed="headerEmit"/>
+      <DataUnsisHeader :is-start="isInHomeRoute" @filters-changed="headerEmit"/>
     </header>
 
-    <!-- Sidebar -->
     <aside class="sidebar-area" v-show="isSidebarVisible">
       <Sidebar/>
     </aside>
 
-    <!-- Main Content -->
+    <button
+      class="external-sidebar-btn"
+      :aria-label="isSidebarVisible ? 'Contraer barra lateral' : 'Expandir barra lateral'"
+      :title="isSidebarVisible ? 'Contraer barra lateral' : 'Expandir barra lateral'"
+      tabindex="0"
+      @click="toggleSidebar"
+    >
+      <Icon
+        :icon="isSidebarVisible ? 'material-symbols:left-panel-close-sharp' : 'material-symbols:left-panel-open-sharp'"
+        width="24"
+        height="24"
+      />
+    </button>
+
     <main class="main-content-area">
-        <router-view 
-          :key="$route.fullPath"
-          :majors="filters.carreras" 
-          :semesters="filters.semestres"
-          :sexo="filters.sexo"
-        />
+      <router-view
+        :key="$route.fullPath"
+        :majors="filters.carreras"
+        :semesters="filters.semestres"
+        :sexo="filters.sexo"
+      />
     </main>
 
-    <!-- Footer -->
     <footer class="footer-area">
       <div class="footer-content">
         <span>Universidad de la Sierra Sur</span>
         <div class="social-icons">
-          <Icon class="icon" icon="line-md:facebook"/>
-          <Icon class="icon" icon="line-md:instagram"/>
-          <Icon class="icon" icon="line-md:twitter-x"/>
+          <a href="https://www.facebook.com/share/1Gcirt5MEX/" target="_blank" rel="noopener">
+            <Icon class="icon" icon="line-md:facebook"/>
+          </a>
+          <a href="https://www.instagram.com/suneo_unsis/" target="_blank" rel="noopener">
+            <Icon class="icon" icon="line-md:instagram"/>
+          </a>
+          <a href="https://twitter.com/SUNEO_UNSIS" target="_blank" rel="noopener">
+            <Icon class="icon" icon="line-md:twitter-x"/>
+          </a>
         </div>
         <span>Soporte</span>
       </div>
@@ -77,30 +120,79 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
 </template>
 
 <style scoped>
-/* Grid Layout Principal - Estructura del Contenedor */
+span{
+  color: #1e4529;
+}
 .app-layout {
   display: grid;
-  grid-template-areas: 
+  grid-template-areas:
     "header header"
     "sidebar main"
     "sidebar footer";
   grid-template-columns: 320px 1fr;
   grid-template-rows: auto 1fr auto;
   min-height: 100vh;
-  background-color: #2D6849;
+  background-color: #F9FAFB;
   transition: grid-template-columns 0.3s ease;
 }
 
-/* Cuando el sidebar está oculto */
-.app-layout.sidebar-hidden {
-  grid-template-areas: 
-    "header"
-    "main"
-    "footer";
+.app-layout.sidebar-collapsed {
+  grid-template-areas:
+    "header header"
+    "main main"
+    "footer footer";
   grid-template-columns: 1fr;
 }
 
-/* Areas del Grid */
+.app-layout.sidebar-collapsed .main-content-area {
+  max-width: 100%;
+}
+
+.app-layout.sidebar-collapsed .content-wrapper {
+  transition: all 0.3s ease;
+}
+
+.app-layout.sidebar-collapsed :deep(.content-container) {
+  max-width: none;
+}
+
+/* Responsive grid para cuando el sidebar está colapsado - máximo 3 por fila */
+@media (min-width: 1200px) {
+  .app-layout.sidebar-collapsed :deep(.content-container) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+  .app-layout.sidebar-collapsed :deep(.content-container) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .app-layout.sidebar-collapsed :deep(.content-container) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+  .app-layout.sidebar-collapsed :deep(.content-container) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Overlay para móvil */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  backdrop-filter: blur(2px);
+}
+
 .header-area {
   grid-area: header;
   background-color: white;
@@ -113,73 +205,138 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
   padding: 0 1rem;
 }
 
-/* Botón toggle del sidebar */
-.sidebar-toggle-btn {
-  background: #275B3B;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  cursor: pointer;
+.sidebar-area {
+  grid-area: sidebar;
+  background-color: #ffffff;
+  border-right: 1px solid #E5E7EB;
+  transition: all 0.3s ease;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.external-sidebar-btn {
+  position: fixed;
+  left: calc(320px - 22px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  background: #ffffff;
+  border: 2px solid #2D6849;
+  color: #2D6849;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1002;
+  cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(39, 91, 59, 0.2);
 }
 
-.sidebar-toggle-btn:hover {
-  background: #1e4529;
-  transform: scale(1.05);
+.external-sidebar-btn:hover {
+  background: #f0f9f4;
+  border-color: #1e4529;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2), 0 3px 6px rgba(0,0,0,0.12);
 }
 
-.sidebar-area {
-  grid-area: sidebar;
-  background-color: #2D6849;
-  border-right: 2px solid #13442A;
-  transition: all 0.3s ease;
+.external-sidebar-btn:focus {
+  outline: 3px solid #4CAF50;
+  outline-offset: 2px;
+}
+
+.external-sidebar-btn:active {
+  transform: translateY(-50%) scale(0.98);
+  background: #e8f5e8;
+}
+
+.app-layout.sidebar-collapsed .external-sidebar-btn {
+  left: 26px;
+}
+
+.external-sidebar-btn > :deep(svg) {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  transition: transform 0.2s ease;
+}
+
+.external-sidebar-btn:hover > :deep(svg) {
+  transform: scale(1.1);
+}
+
+@media (max-width: 1024px) {
+  .external-sidebar-btn {
+    left: calc(280px - 22px);
+  }
+  .app-layout.sidebar-collapsed .external-sidebar-btn {
+    left: 26px;
+  }
+}
+
+@media (max-width: 768px) {
+  .external-sidebar-btn {
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001;
+    display: flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .external-sidebar-btn {
+    transition: none;
+  }
+  .external-sidebar-btn:hover {
+    transform: translateY(-50%);
+  }
+  .external-sidebar-btn:hover > :deep(svg) {
+    transform: none;
+  }
 }
 
 .main-content-area {
   grid-area: main;
-  background-color: #2D6849;
+  background-color: #F9FAFB;
   padding: 2rem;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   height: 100%;
   min-height: 0;
+  width: 100%;
+  transition: all 0.3s ease;
 }
 
-/* Contenedor interno con scroll */
 .content-wrapper {
-  background: #2D6849;
+  background: #ffffff;
   border-radius: 1rem;
   padding: 2rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
   overflow-y: auto;
   overflow-x: hidden;
-  height: 70vh; /* Altura fija */
-  max-height: 70vh; /* Máximo fijo */
-  min-height: 70vh; /* Mínimo fijo */
+  height: 70vh;
+  max-height: 70vh;
+  min-height: 70vh;
   width: 100%;
   position: relative;
+  min-height: 400px;
 }
 
 .footer-area {
   grid-area: footer;
-  background-color: #2D6849;
-  border-top: 1px solid #13442A;
+  background-color: #ffffff;
+  border-top: 1px solid #E5E7EB;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05);
 }
 
-/* Footer Content */
 .footer-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1rem 2rem;
-  color: white;
+  color: #6B7280;
   min-height: 60px;
 }
 
@@ -193,14 +350,15 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
   width: 2.5rem;
   height: 2.5rem;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, color 0.2s ease;
+  color: #2D6849;
 }
 
 .icon:hover {
   transform: scale(1.1);
+  color: #1e4529;
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .app-layout {
     grid-template-columns: 280px 1fr;
@@ -209,14 +367,13 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
 
 @media (max-width: 768px) {
   .app-layout {
-    grid-template-areas: 
+    grid-template-areas:
       "header"
       "main"
       "footer";
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr auto;
   }
-  
   .sidebar-area {
     position: fixed;
     top: 0;
@@ -224,46 +381,37 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
     height: 100vh;
     width: 280px;
     z-index: 1000;
-    transform: translateX(-100%);
     transition: transform 0.3s ease;
-  }
-  
-  /* Mostrar sidebar cuando está visible en móvil */
-  .app-layout:not(.sidebar-hidden) .sidebar-area {
     transform: translateX(0);
   }
-  
-  /* Agregar overlay cuando el sidebar está abierto en móvil */
-  .app-layout:not(.sidebar-hidden)::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+  .app-layout.sidebar-collapsed .sidebar-area {
+    transform: translateX(-100%);
   }
-  
+  .external-sidebar-btn {
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001;
+  }
+  .app-layout.sidebar-collapsed .external-sidebar-btn {
+    left: 16px;
+  }
   .main-content-area {
     padding: 1rem;
   }
-  
   .content-wrapper {
     padding: 1.5rem;
     border-radius: 0.75rem;
-    height: 65vh; /* Altura fija en tablet */
+    height: 65vh;
     max-height: 65vh;
     min-height: 65vh;
   }
-  
   .footer-content {
     flex-direction: column;
     gap: 1rem;
     padding: 1rem;
     text-align: center;
   }
-  
   .social-icons {
     justify-content: center;
   }
@@ -273,19 +421,16 @@ const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[]
   .main-content-area {
     padding: 0.5rem;
   }
-  
   .content-wrapper {
     padding: 1rem;
     border-radius: 0.5rem;
-    height: 60vh; /* Altura fija en móvil */
+    height: 60vh;
     max-height: 60vh;
     min-height: 60vh;
   }
-  
   .footer-content {
     padding: 0.75rem;
   }
-  
   .icon {
     width: 2rem;
     height: 2rem;
