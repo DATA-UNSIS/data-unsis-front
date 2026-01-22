@@ -4,6 +4,7 @@ import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { Icon } from '@iconify/vue'
 import HotMap from '../../components/HotMap.vue'
+import MapComponent from '../../components/MapComponent.vue'
 import { statsApi } from '../../services/statsApi.js'
 
 // Variables para los datos del dashboard (basados en la respuesta de la API)
@@ -217,6 +218,13 @@ onMounted(() => {
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Sección del mapa -->
+    <div class="map-section">
+      <h2 class="section-title">Mapa de Distribución de Alumnos por Municipio</h2>
+      <p class="section-subtitle">Visualiza la procedencia de los estudiantes en Oaxaca</p>
+      <MapComponent />
     </div>
   </div>
   
@@ -536,6 +544,27 @@ onMounted(() => {
 
 .error-icon {
   color: #DC2626;
+}
+
+.map-section {
+  max-width: 1400px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 2px solid #2D6849;
+}
+
+.map-section .section-title {
+  text-align: center;
+  color: #2D6849;
+  margin-bottom: 0.5rem;
+}
+
+.map-section .section-subtitle {
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
 
 @media (max-width: 1024px) {
