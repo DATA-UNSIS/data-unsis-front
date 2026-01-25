@@ -206,7 +206,7 @@ const prop = defineProps<{
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@800&display=swap');
+/* Fuente cargada localmente desde src/assets/fonts/fonts.css */
 .font-libre {
   font-family: 'Libre Franklin', sans-serif;
 }
