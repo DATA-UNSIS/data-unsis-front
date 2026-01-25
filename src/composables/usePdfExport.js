@@ -227,8 +227,6 @@ export function usePdfExport() {
           graphsInCurrentPage++;
 
         } catch (error) {
-          console.error(`Error al capturar el gráfico ${i + 1}:`, error);
-          
           // Agregar mensaje de error en el PDF
           pdf.setFontSize(10);
           pdf.setFont('helvetica', 'italic');
@@ -293,7 +291,6 @@ export function usePdfExport() {
       };
 
     } catch (error) {
-      console.error('Error al generar PDF:', error);
       return {
         success: false,
         message: error.message || 'Error desconocido al generar el PDF',
@@ -396,7 +393,6 @@ export function usePdfExport() {
       };
 
     } catch (error) {
-      console.error('Error al generar PDF del gráfico:', error);
       return {
         success: false,
         message: error.message || 'Error al generar el PDF',

@@ -43,11 +43,7 @@ function style(feature) {
 
 // 3. Función para agregar marcadores de puntos
 function addMarkers(coordinates) {
-    console.log('addMarkers llamado con:', coordinates.length, 'puntos');
-    console.log('Zoom actual:', currentZoom.value, 'Mínimo requerido:', MIN_ZOOM_FOR_MARKERS);
-    
     if (!map) {
-        console.log('Mapa no inicializado');
         return;
     }
     
@@ -58,13 +54,11 @@ function addMarkers(coordinates) {
     
     // Solo mostrar si el zoom es suficiente
     if (currentZoom.value < MIN_ZOOM_FOR_MARKERS) {
-        console.log('Zoom insuficiente para mostrar marcadores');
         return;
     }
     
     // Crear una capa de marcadores
     markersLayer = L.layerGroup();
-    console.log('Creando', coordinates.length, 'marcadores');
     
     let markersCreated = 0;
     coordinates.forEach(point => {
@@ -105,24 +99,16 @@ function addMarkers(coordinates) {
             });
             
             markersLayer.addLayer(marker);
-        } else {
-            console.log('Punto sin coordenadas válidas:', point);
         }
     });
     
-    console.log('Marcadores creados:', markersCreated);
     markersLayer.addTo(map);
-    console.log('Capa de marcadores agregada al mapa');
 }
 
 // 4. Watch para actualizar marcadores cuando cambien las coordenadas
 watch(() => props.coordinates, (newCoordinates) => {
-    console.log('Watch activado - Nuevas coordenadas recibidas:', newCoordinates?.length || 0);
     if (newCoordinates && newCoordinates.length > 0) {
-        console.log('Primeras 3 coordenadas:', newCoordinates.slice(0, 3));
         addMarkers(newCoordinates);
-    } else {
-        console.log('No hay coordenadas para mostrar');
     }
 }, { deep: true });
 
@@ -148,7 +134,6 @@ onMounted(async () => {
         const response = await statsApi.getMunicipiosConConteo();
         
         if (!response.success) {
-            console.error('Error al cargar municipios:', response.error);
             return;
         }
         
@@ -190,7 +175,7 @@ onMounted(async () => {
         }
 
     } catch (error) {
-        console.error("Error cargando mapa:", error);
+        // Error handling
     }
 });
 </script>

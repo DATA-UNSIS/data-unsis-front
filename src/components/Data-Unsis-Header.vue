@@ -73,20 +73,13 @@ const emitFilters = () => {
     semestres: semestresToEmit,
     sexo: null
   });
-  console.log("Datos emitidos:", {
-    carreras: carrerasToEmit,
-    semestres: semestresToEmit,
-    sexo: null
-  });
 };
 
 watch(selectedDegree, (newVal) => {
-  console.log('Semestre seleccionado:', newVal);
   emitFilters();
 });
 
-watch(selectedCarrera, (newVal) => {
-  console.log('Carrera seleccionada:', newVal);
+watch(selectedMajors, (newVal) => {
   emitFilters();
 });
 
@@ -132,7 +125,6 @@ const generatePDF = async () => {
     }
     
   } catch (error) {
-    console.error('Error al generar PDF:', error);
     toast.add({
       severity: 'error',
       summary: 'Error al Generar PDF',

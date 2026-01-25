@@ -53,7 +53,6 @@ onUnmounted(() => {
 });
 
 const headerEmit = (newFilters: { carreras: string[] | null; semestres: string[] | null; sexo: string | null }) => {
-  console.log("Filtros recibidos en AppContainer:", newFilters);
   filters.value = newFilters;
 };
 

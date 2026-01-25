@@ -15,8 +15,6 @@ export const statsApi = {
    */
   async getDashboardData(majors) {
     try {
-      console.log('Enviando carreras al endpoint dashboard-data:', majors)
-
       const response = await fetch(DASHBOARD_API_URL, {
         method: 'POST',
         headers: {
@@ -31,15 +29,12 @@ export const statsApi = {
       }
       
       const data = await response.json()
-      console.log('Respuesta del dashboard:', data)
       
       return {
         success: true,
         data
       }
     } catch (error) {
-      console.log("Error al obtener datos del dashboard", error)
-      
       return {
         success: false,
         error: error.message
@@ -56,8 +51,6 @@ export const statsApi = {
    */
   async getStudentCoordinates(majors, semesters = null, sexo = null) {
     try {
-      console.log('Obteniendo coordenadas para:', { majors, semesters, sexo })
-
       const requestBody = { majors }
       if (semesters) requestBody.semesters = semesters
       if (sexo) requestBody.sexo = sexo
@@ -76,15 +69,12 @@ export const statsApi = {
       }
       
       const data = await response.json()
-      console.log('Coordenadas recibidas:', data)
       
       return {
         success: true,
         data: data.heatMapData || []
       }
     } catch (error) {
-      console.log("Error al obtener coordenadas", error)
-      
       return {
         success: false,
         error: error.message,
@@ -100,8 +90,6 @@ export const statsApi = {
    */
   async getChartData(titles, majors, semesters, sexo) {
     try {
-      console.log('Enviando filtros al backend:', titles, majors, semesters, sexo)
-
       const response = await fetch(`${API_BASE_URL}`, {
         method: 'POST',
         headers: {
@@ -116,15 +104,12 @@ export const statsApi = {
       }
       
       const data = await response.json()
-      console.log('Respuesta del backend:', data)
       
       return {
         success: true,
         data
       }
     } catch (error) {
-      console.log("Error al obtemer datos del backend", error)
-      
       return {
         success: false,
         error: error.message
@@ -138,8 +123,6 @@ export const statsApi = {
    */
   async getMunicipiosConConteo() {
     try {
-      console.log('Obteniendo municipios con conteo...')
-
       const response = await fetch('/api/data-unsis/api/mapa/municipios-con-conteo', {
         method: 'GET',
         headers: {
@@ -152,15 +135,12 @@ export const statsApi = {
       }
       
       const data = await response.json()
-      console.log('Municipios recibidos:', data.length)
       
       return {
         success: true,
         data
       }
     } catch (error) {
-      console.log("Error al obtener municipios", error)
-      
       return {
         success: false,
         error: error.message,

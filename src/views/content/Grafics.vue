@@ -30,7 +30,6 @@ const titlesToUse = computed(() => {
 // Variables reactivas para manejar múltiples gráficos
 const chartDataList = ref([]);
 async function dataBackend () {
-  console.log('Enviando datos al backend...', titlesToUse.value, majorsToUse.value, semestersToUse.value, props.sexo);
   response = await statsApi.getChartData(titlesToUse.value, majorsToUse.value, semestersToUse.value, props.sexo)
   separateResponse()
 }
@@ -56,13 +55,11 @@ const props = defineProps({
 
 // Watcher para detectar cambios en los filtros y actualizar los datos automáticamente
 watch([() => props.majors, () => props.semesters, () => props.sexo], () => {
-  console.log('Filtros cambiaron, actualizando datos...');
   dataBackend();
 }, { deep: true });
 
 // Ejecutar al montar el componente si hay filtros o usar los valores por defecto
 onMounted(() => {
-  console.log('Componente montado, cargando datos iniciales...');
   dataBackend();
 });
 
@@ -92,7 +89,6 @@ function separateResponse() {
     
     // Si no se encuentra la configuración, usar valores por defecto
     if (!enumProps) {
-      console.log(`No se encontró configuración para el elemento: ${element.title}`);
       enumProps = {
         title: element.title,
         type: 'bar',

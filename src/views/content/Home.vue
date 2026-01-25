@@ -77,19 +77,15 @@ const toggleCareer = (careerId: number) => {
 // Función para cargar todas las coordenadas sin filtros
 const loadAllCoordinates = async () => {
   try {
-    console.log('Cargando todas las coordenadas sin filtros')
     // Llamar a la API sin filtros (array vacío)
     const coordsResult = await statsApi.getStudentCoordinates([])
     
     if (coordsResult.success) {
       studentCoordinates.value = coordsResult.data
-      console.log('Coordenadas totales obtenidas:', studentCoordinates.value.length, 'puntos')
     } else {
-      console.error('Error al obtener coordenadas:', coordsResult.error)
       studentCoordinates.value = []
     }
   } catch (err) {
-    console.error('Error en loadAllCoordinates:', err)
     studentCoordinates.value = []
   }
 }
@@ -104,7 +100,6 @@ const consultData = async () => {
     
     // Obtener solo los nombres de las carreras seleccionadas
     const selectedCareerNames = selectedCareers.value.map(career => career.name)
-    console.log('Consultando datos para carreras:', selectedCareerNames)
     
     // Llamar a la API para dashboard
     const result = await statsApi.getDashboardData(selectedCareerNames)
@@ -121,12 +116,10 @@ const consultData = async () => {
       nonMiahuatlanOrigin.value = data.noOriginarios || 0
     } else {
       error.value = result.error
-      console.error('Error al obtener datos del dashboard:', result.error)
     }
     
   } catch (err) {
     error.value = 'Error al consultar los datos'
-    console.error('Error en consultData:', err)
   } finally {
     isLoading.value = false
   }

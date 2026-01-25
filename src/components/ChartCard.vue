@@ -300,7 +300,7 @@ async function exportDataTable() {
       document.body.removeChild(link);
       
     } catch (error) {
-      console.error('Error al exportar la tabla:', error);
+      // Error handling
     }
   }
 }

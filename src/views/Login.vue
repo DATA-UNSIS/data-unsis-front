@@ -7,7 +7,6 @@ const router = useRouter();
 const showPassword = ref(false);
 
 function login() {
-  console.log('Iniciar sesión');
   router.push('/alumnos');
 }
 
