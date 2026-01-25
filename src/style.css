@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "tailwindcss-primeui";
-@import "./assets/fonts/fonts.css";
+/* @import "./assets/fonts/fonts.css"; */  /* Font file corrupted - using system fonts instead */
 
 
 * {

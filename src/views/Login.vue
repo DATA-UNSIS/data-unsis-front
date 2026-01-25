@@ -40,9 +40,9 @@ function togglePasswordVisibility() {
                 name="contrasena" 
                 placeholder="Ingresa tu contraseña" 
               />
-              <Button class="eye-icon" variant="text" @click="togglePasswordVisibility">
+              <button class="eye-icon" type="button" @click="togglePasswordVisibility">
                 <Icon :icon="showPassword ? 'mdi:eye' : 'mdi:eye-off'" class="eye-icon" />
-              </Button>
+              </button>
             </div>
           </div>
           

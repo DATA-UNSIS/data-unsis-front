@@ -79,7 +79,7 @@ watch(selectedDegree, (newVal) => {
   emitFilters();
 });
 
-watch(selectedMajors, (newVal) => {
+watch(selectedCarrera, (newVal) => {
   emitFilters();
 });
 
@@ -198,9 +198,10 @@ const prop = defineProps<{
 </template>
 
 <style scoped>
-/* Fuente cargada localmente desde src/assets/fonts/fonts.css */
+/* Using system fonts instead of corrupted Libre Franklin */
 .font-libre {
-  font-family: 'Libre Franklin', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 800;
 }
 
 .type-label {
