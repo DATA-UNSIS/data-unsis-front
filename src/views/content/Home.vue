@@ -16,6 +16,9 @@ const indigenousLanguageSpeakers = ref(0)
 const studentsWithMathPaternity = ref(0)
 const nonMiahuatlanOrigin = ref(0)
 
+// Coordenadas de estudiantes para el mapa
+const studentCoordinates = ref([])
+
 // Estado de carga
 const isLoading = ref(false)
 const error = ref(null)
@@ -71,6 +74,22 @@ const toggleCareer = (careerId: number) => {
   }
 }
 
+// Función para cargar todas las coordenadas sin filtros
+const loadAllCoordinates = async () => {
+  try {
+    // Llamar a la API sin filtros (array vacío)
+    const coordsResult = await statsApi.getStudentCoordinates([])
+    
+    if (coordsResult.success) {
+      studentCoordinates.value = coordsResult.data
+    } else {
+      studentCoordinates.value = []
+    }
+  } catch (err) {
+    studentCoordinates.value = []
+  }
+}
+
 // Función para consultar datos (automática)
 const consultData = async () => {
   if (selectedCareers.value.length === 0) return
@@ -81,9 +100,8 @@ const consultData = async () => {
     
     // Obtener solo los nombres de las carreras seleccionadas
     const selectedCareerNames = selectedCareers.value.map(career => career.name)
-    console.log('Consultando datos para carreras:', selectedCareerNames)
     
-    // Llamar a la API
+    // Llamar a la API para dashboard
     const result = await statsApi.getDashboardData(selectedCareerNames)
     
     if (result.success) {
@@ -98,11 +116,10 @@ const consultData = async () => {
       nonMiahuatlanOrigin.value = data.noOriginarios || 0
     } else {
       error.value = result.error
-      console.error('Error al obtener datos del dashboard:', result.error)
     }
+    
   } catch (err) {
     error.value = 'Error al consultar los datos'
-    console.error('Error en consultData:', err)
   } finally {
     isLoading.value = false
   }
@@ -110,6 +127,10 @@ const consultData = async () => {
 
 // Cargar datos inicial al montar el componente
 onMounted(() => {
+  // Cargar todas las coordenadas sin filtros para el mapa
+  loadAllCoordinates()
+  
+  // Cargar datos del dashboard si hay carreras seleccionadas
   if (selectedCareers.value.length > 0) {
     consultData()
   }
@@ -224,7 +245,7 @@ onMounted(() => {
     <div class="map-section">
       <h2 class="section-title">Mapa de Distribución de Alumnos por Municipio</h2>
       <p class="section-subtitle">Visualiza la procedencia de los estudiantes en Oaxaca</p>
-      <MapComponent />
+      <MapComponent :coordinates="studentCoordinates" />
     </div>
   </div>
   
@@ -236,6 +257,7 @@ onMounted(() => {
   min-height: 100vh;
   font-family: 'Montserrat', Arial, sans-serif;
 }
+
 
 .header-section {
   text-align: center;

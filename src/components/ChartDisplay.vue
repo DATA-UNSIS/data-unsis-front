@@ -37,15 +37,12 @@ const currentChartIndex = ref(0)
 // Watch para cuando cambien los datos del backend
 watch(() => props.chartData, (newData) => {
   if (newData) {
-    console.log('ChartDisplay recibió nuevos datos:', newData)
-
     // Verificar si es el nuevo formato esperado
     if (newData.success && newData.data && newData.data.datos) {
       createChartFromBackendData(newData)
     } else if (Array.isArray(newData)) {
       createChartFromDirectArray(newData)
     } else {
-      console.warn('Formato de datos no reconocido:', newData)
       // Intentar procesar como formato anterior por compatibilidad
       createChartFromBackendData(newData)
     }
@@ -146,7 +143,7 @@ const createChart = async () => {
   try {
     chartInstance.value = new Chart(ctx, config)
   } catch (error) {
-    console.error('Error al crear gráfico:', error)
+    // Error handling
   }
 }
 // El título del gráfico se toma de la propiedad "title" del chartType correspondiente
@@ -162,17 +159,13 @@ const createChartFromBackendData = async (backendResponse: any) => {
     chartInstance.value = undefined
   }
 
-  console.log('Creando gráfico con datos del backend:', backendResponse)
-
   // Verificar si la respuesta tiene el formato esperado
   if (!backendResponse.success) {
-    console.error('Error en la respuesta del backend:', backendResponse)
     showErrorChart('Error al cargar los datos del servidor')
     return
   }
 
   if (!backendResponse.data || !backendResponse.data.datos) {
-    console.error('Datos no encontrados en la respuesta:', backendResponse)
     showErrorChart('Formato de datos incorrecto')
     return
   }
@@ -185,7 +178,6 @@ const createChartFromBackendData = async (backendResponse: any) => {
   const currentChartType = chartTypes.value.find(chart => chart.code === chartCode)
 
   if (!currentChartType) {
-    console.error('Tipo de gráfico no encontrado para el código:', chartCode)
     showErrorChart('Tipo de gráfico no reconocido')
     return
   }
@@ -196,7 +188,6 @@ const createChartFromBackendData = async (backendResponse: any) => {
 
   // Verificar que hay datos para mostrar
   if (!Array.isArray(chartData) || chartData.length === 0) {
-    console.warn('No hay datos para mostrar en el gráfico')
     showErrorChart('No hay datos disponibles para mostrar')
     return
   }
@@ -246,9 +237,7 @@ const createChartFromBackendData = async (backendResponse: any) => {
 
   try {
     chartInstance.value = new Chart(ctx, config)
-    console.log(`Gráfico tipo '${chartType}' creado exitosamente con código: '${chartCode}' y título: '${chartTitle}'`)
   } catch (error) {
-    console.error('Error al crear gráfico con datos del backend:', error)
     showErrorChart('Error al crear el gráfico')
   }
 }// Nueva función para manejar arrays directos como [{ name: "...", count: ... }]
@@ -263,8 +252,6 @@ const createChartFromDirectArray = async (dataArray: any[]) => {
     chartInstance.value.destroy()
     chartInstance.value = undefined
   }
-
-  console.log('Creando gráfico con array directo:', dataArray)
 
   // Extraer labels y values del array
   const labels = dataArray.map((item: any) => item.name || item.label || 'Sin nombre')
@@ -315,9 +302,8 @@ const createChartFromDirectArray = async (dataArray: any[]) => {
 
   try {
     chartInstance.value = new Chart(ctx, config)
-    console.log(`Gráfico creado exitosamente desde array directo con ${dataArray.length} elementos`)
   } catch (error) {
-    console.error('Error al crear gráfico desde array directo:', error)
+    // Error handling
   }
 }
 
@@ -385,40 +371,11 @@ const showErrorChart = async (errorMessage: string) => {
 
   try {
     chartInstance.value = new Chart(ctx, config)
-    console.log('Gráfico de error mostrado:', errorMessage)
   } catch (error) {
-    console.error('Error al mostrar gráfico de error:', error)
+    // Error handling
   }
 }
 
-// Función de prueba para verificar el formato JSON
-const testJsonFormat = () => {
-  const testData = {
-    "success": true,
-    "data": {
-      "titulo": "MAJOR_DISTRIBUTION",
-      "datos": [
-        { "label": "Ingeniería en Sistemas", "value": 45 },
-        { "label": "Ingeniería Civil", "value": 30 },
-        { "label": "Medicina", "value": 25 },
-        { "label": "Derecho", "value": 20 }
-      ]
-    }
-  }
-
-  console.log('🧪 Probando formato JSON esperado:', testData)
-  console.log('📊 Código recibido:', testData.data.titulo)
-  console.log('📈 Datos a graficar:', testData.data.datos)
-
-  createChartFromBackendData(testData)
-}
-
-// Exponer función de prueba para desarrollo
-if (import.meta.env.DEV) {
-  // @ts-ignore
-  window.testChartDisplay = testJsonFormat
-  console.log('🧪 Función de prueba disponible: window.testChartDisplay()')
-}
 </script>
 
 <style scoped>

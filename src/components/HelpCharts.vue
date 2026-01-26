@@ -84,18 +84,8 @@ const isDarkReaderActive = () => {
     const bodyColor = bodyStyle.color
     const isWhiteText = bodyColor && bodyColor.includes('rgb(255, 255, 255)')
     
-    console.log('Dark Reader Detection:', {
-      filter,
-      hasDarkReaderFilter,
-      hasDarkReaderElements,
-      bodyBackground,
-      isDarkBackground,
-      bodyColor,
-      isWhiteText
-    })
     return hasDarkReaderFilter || hasDarkReaderElements || (isDarkBackground && isWhiteText)
   } catch (error) {
-    console.log('Error detecting Dark Reader:', error)
     return false
   }
 }
@@ -151,8 +141,6 @@ onMounted(async () => {
   setTimeout(() => {
     const darkMode = isDarkReaderActive()
     
-    console.log('Final Dark Mode Detection:', darkMode)
-    
     // COLORES DEFINITIVOS
     const textColor = darkMode ? '#FFFFFF' : '#1F2937'
     const gridColor = darkMode ? '#4B5563' : '#E5E7EB'
@@ -161,7 +149,6 @@ onMounted(async () => {
     charts.forEach(chart => {
       const ctx = chartRefs.value[chart.type]
       if (!ctx) {
-        console.warn(`No se encontró el canvas para el gráfico: ${chart.type}`)
         return
       }
 

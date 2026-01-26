@@ -102,7 +102,6 @@ import { ref } from "vue";
 const router = useRouter();
 
 const logout = () => {
-  console.log("Logout clicked");
   router.push("/login");
 };
 

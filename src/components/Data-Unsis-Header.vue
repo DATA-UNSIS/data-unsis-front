@@ -73,20 +73,13 @@ const emitFilters = () => {
     semestres: semestresToEmit,
     sexo: null
   });
-  console.log("Datos emitidos:", {
-    carreras: carrerasToEmit,
-    semestres: semestresToEmit,
-    sexo: null
-  });
 };
 
 watch(selectedDegree, (newVal) => {
-  console.log('Semestre seleccionado:', newVal);
   emitFilters();
 });
 
 watch(selectedCarrera, (newVal) => {
-  console.log('Carrera seleccionada:', newVal);
   emitFilters();
 });
 
@@ -132,7 +125,6 @@ const generatePDF = async () => {
     }
     
   } catch (error) {
-    console.error('Error al generar PDF:', error);
     toast.add({
       severity: 'error',
       summary: 'Error al Generar PDF',
@@ -206,9 +198,10 @@ const prop = defineProps<{
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@800&display=swap');
+/* Using system fonts instead of corrupted Libre Franklin */
 .font-libre {
-  font-family: 'Libre Franklin', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 800;
 }
 
 .type-label {
