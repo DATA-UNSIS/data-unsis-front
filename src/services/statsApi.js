@@ -1,11 +1,22 @@
 // Servicio para manejar las llamadas a la API de estadísticas
 
-const API_BASE_URL = '/api/data-unsis/api/execute-general-query'
-const DASHBOARD_API_URL = '/api/data-unsis/api/dashboard-data'
-const COORDINATES_API_URL = '/api/data-unsis/api/mapa/coordenadas-estudiantes'
-const LOGIN_API_URL = '/api/data-unsis/auth/login'
+const API_BASE_URL = 'http://localhost:8080/dataunsis/api/execute/general'
+const DASHBOARD_API_URL = 'http://localhost:8080/dataunsis/api/execute/dashboard'
+const COORDINATES_API_URL = 'http://localhost:8080/dataunsis/api/map/coords'
+const LOGIN_API_URL = 'http://localhost:8080/auth/login'
 
-
+/**
+ * Obtiene los headers con el token JWT de autorización
+ * @returns {Object} - Headers con el token de autorización
+ */
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token')
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  }
+}
 
 
 export const statsApi = {
@@ -68,19 +79,19 @@ export const statsApi = {
     try {
       const response = await fetch(DASHBOARD_API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ majors })
       })
-      
+
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+        }
         throw new Error(`Error del servidor: ${response.status} ${response.statusText}`)
       }
-      
+
       const data = await response.json()
-      
+
       return {
         success: true,
         data
@@ -108,19 +119,19 @@ export const statsApi = {
 
       const response = await fetch(COORDINATES_API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(requestBody)
       })
-      
+
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+        }
         throw new Error(`Error del servidor: ${response.status} ${response.statusText}`)
       }
-      
+
       const data = await response.json()
-      
+
       return {
         success: true,
         data: data.heatMapData || []
@@ -143,19 +154,19 @@ export const statsApi = {
     try {
       const response = await fetch(`${API_BASE_URL}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ titles, majors, semesters, sexo })
       })
-      
+
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+        }
         throw new Error(`Error del servidor: ${response.status} ${response.statusText}`)
       }
-      
+
       const data = await response.json()
-      
+
       return {
         success: true,
         data
@@ -174,19 +185,20 @@ export const statsApi = {
    */
   async getMunicipiosConConteo() {
     try {
-      const response = await fetch('/api/data-unsis/api/mapa/municipios-con-conteo', {
+      const response = await fetch('http://localhost:8080/dataunsis/api/map/municipalities', {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json'
-        }
+        headers: getAuthHeaders()
       })
-      
+
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+        }
         throw new Error(`Error del servidor: ${response.status} ${response.statusText}`)
       }
-      
+
       const data = await response.json()
-      
+
       return {
         success: true,
         data
