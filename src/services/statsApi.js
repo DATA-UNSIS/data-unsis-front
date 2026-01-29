@@ -28,7 +28,6 @@ export const statsApi = {
    */
   async login(username, password) {
     try {
-      console.log('Intentando iniciar sesión:', username)
 
       const response = await fetch(LOGIN_API_URL, {
         method: 'POST',
@@ -47,7 +46,6 @@ export const statsApi = {
       }
       
       const data = await response.json()
-      console.log('Login exitoso:', data)
       
       // Guardar el token en localStorage
       if (data.token) {
@@ -60,7 +58,6 @@ export const statsApi = {
         data
       }
     } catch (error) {
-      console.error("Error al iniciar sesión:", error)
       
       return {
         success: false,
