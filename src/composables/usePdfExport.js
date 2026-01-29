@@ -63,7 +63,7 @@ export function usePdfExport() {
     
     // Logo en esquina superior izquierda
     if (logoBase64) {
-      pdf.addImage(logoBase64, 'PNG', margin, margin, logoSize, logoSize);
+      pdf.addImage(logoBase64, 'PNG', margin, margin-5, logoSize, logoSize);
     }
     
     // Nombre de la universidad centrado
