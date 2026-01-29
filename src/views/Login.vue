@@ -2,12 +2,40 @@
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
+import { statsApi } from '../services/statsApi.js'
 
 const router = useRouter();
 const showPassword = ref(false);
+const username = ref('');
+const password = ref('');
+const loading = ref(false);
+const errorMessage = ref('');
 
-function login() {
-  router.push('/alumnos');
+async function login() {
+  // Validar que los campos no estén vacíos
+  if (!username.value || !password.value) {
+    errorMessage.value = 'Por favor, ingresa tu usuario y contraseña';
+    return;
+  }
+
+  loading.value = true;
+  errorMessage.value = '';
+
+  try {
+    const result = await statsApi.login(username.value, password.value);
+
+    if (result.success) {
+      console.log('Login exitoso, redirigiendo...');
+      router.push('/alumnos');
+    } else {
+      errorMessage.value = result.error || 'Error al iniciar sesión';
+    }
+  } catch (error) {
+    errorMessage.value = 'Error de conexión. Por favor, intenta nuevamente.';
+    console.error('Error en login:', error);
+  } finally {
+    loading.value = false;
+  }
 }
 
 function togglePasswordVisibility() {
@@ -22,38 +50,42 @@ function togglePasswordVisibility() {
         <div class="logo">
           <img src="/src/assets/logo.png" alt="Escudo de la Universidad de la Sierra Sur" />
         </div>
-        
+
         <h2>PORTAL DE ESTADISTICAS</h2>
-        
+
+        <!-- Mensaje de error -->
+        <div v-if="errorMessage" class="error-message">
+          <Icon icon="mdi:alert-circle" />
+          <span>{{ errorMessage }}</span>
+        </div>
+
         <div class="form-section">
           <div class="form-group">
             <label for="usuario">Nombre de usuario</label>
-            <input type="text" id="usuario" name="usuario" placeholder="Ingresa tu nombre de usuario" />
+            <input type="text" id="usuario" name="usuario" v-model="username" placeholder="Ingresa tu nombre de usuario"
+              @keyup.enter="login" :disabled="loading" />
           </div>
-          
+
           <div class="form-group">
             <label for="contrasena">Contraseña</label>
             <div class="password-input">
-              <input 
-                :type="showPassword ? 'text' : 'password'" 
-                id="contrasena" 
-                name="contrasena" 
-                placeholder="Ingresa tu contraseña" 
-              />
+              <input :type="showPassword ? 'text' : 'password'" id="contrasena" name="contrasena" v-model="password"
+                placeholder="Ingresa tu contraseña" @keyup.enter="login" :disabled="loading" />
               <button class="eye-icon" type="button" @click="togglePasswordVisibility">
                 <Icon :icon="showPassword ? 'mdi:eye' : 'mdi:eye-off'" class="eye-icon" />
               </button>
             </div>
           </div>
-          
+
           <div class="button-container">
-            <button class="login-button" @click="login()">
-              Iniciar Sesión
+            <button class="login-button" @click="login" :disabled="loading">
+              <Icon v-if="loading" icon="mdi:loading" class="spin-icon" />
+              <span>{{ loading ? 'Iniciando...' : 'Iniciar Sesión' }}</span>
             </button>
           </div>
         </div>
       </div>
-      
+
       <div class="login-image">
         <img src="/src/assets/campus.png" alt="Imagen animada del campus de la Universidad de la Sierra Sur" />
       </div>
@@ -122,6 +154,39 @@ h2 {
   margin: 0 0 40px 0;
   text-align: center;
   line-height: 1.3;
+}
+
+.error-message {
+  width: 100%;
+  max-width: 350px;
+  padding: 12px 16px;
+  background-color: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
+  font-size: 14px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideDown 0.3s ease;
+}
+
+.error-message svg {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .form-section {
@@ -245,6 +310,7 @@ input[type="password"]::placeholder {
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
+  gap: 8px;
   min-width: 180px;
   min-height: 48px;
   justify-content: center;
@@ -252,15 +318,34 @@ input[type="password"]::placeholder {
   box-shadow: 0 2px 8px rgba(45, 104, 73, 0.2);
 }
 
-.login-button:hover {
+.login-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.login-button:hover:not(:disabled) {
   background-color: #1f4a33;
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(45, 104, 73, 0.4);
 }
 
-.login-button:active {
+.login-button:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(45, 104, 73, 0.2);
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .login-image {
@@ -307,25 +392,25 @@ input[type="password"]::placeholder {
   .login-container {
     padding: 15px;
   }
-  
+
   .login-card {
     max-width: 100%;
     min-height: 500px;
   }
-  
+
   .login-form {
     padding: 40px 30px;
   }
-  
+
   .login-image {
     padding: 30px;
   }
-  
+
   .login-image img {
     min-height: 400px;
     max-height: 500px;
   }
-  
+
   h2 {
     font-size: 22px;
   }
@@ -339,7 +424,7 @@ input[type="password"]::placeholder {
     padding-top: 20px;
     padding-bottom: 20px;
   }
-  
+
   .login-card {
     flex-direction: column;
     max-width: 100%;
@@ -347,47 +432,47 @@ input[type="password"]::placeholder {
     border-radius: 20px;
     margin: 0;
   }
-  
+
   .login-form {
     flex: none;
     padding: 40px 30px;
     min-height: auto;
     order: 1;
   }
-  
+
   .login-image {
     flex: none;
     padding: 30px 20px;
     min-height: 300px;
     order: 2;
   }
-  
+
   .login-image img {
     min-height: 250px;
     max-height: 400px;
     border-radius: 20px;
   }
-  
+
   h2 {
     font-size: 20px;
     margin-bottom: 35px;
   }
-  
+
   .logo img {
     max-width: 100px;
   }
-  
+
   .form-section {
     max-width: 400px;
   }
-  
+
   .links {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
     gap: 20px;
   }
-  
+
   .links a {
     font-size: 13px;
     padding: 6px 10px;
@@ -402,40 +487,40 @@ input[type="password"]::placeholder {
     padding-top: 15px;
     padding-bottom: 15px;
   }
-  
+
   .login-card {
     border-radius: 15px;
     margin: 0;
   }
-  
+
   .login-form {
     padding: 30px 25px;
   }
-  
+
   .login-image {
     padding: 25px 15px;
     min-height: 250px;
   }
-  
+
   .login-image img {
     min-height: 200px;
     max-height: 300px;
     border-radius: 15px;
   }
-  
+
   h2 {
     font-size: 18px;
     margin-bottom: 30px;
   }
-  
+
   .logo img {
     max-width: 90px;
   }
-  
+
   .form-section {
     max-width: 100%;
   }
-  
+
   .links {
     flex-direction: column;
     align-items: flex-end;
@@ -451,79 +536,80 @@ input[type="password"]::placeholder {
     padding-top: 10px;
     padding-bottom: 10px;
   }
-  
+
   .login-card {
     border-radius: 12px;
     margin: 0;
   }
-  
+
   .login-form {
     padding: 25px 20px;
   }
-  
+
   .form-group {
     margin-bottom: 20px;
   }
-  
+
   .form-group label {
     font-size: 13px;
     margin-bottom: 6px;
   }
-  
+
   input[type="text"],
   input[type="password"] {
     padding: 10px 0;
-    font-size: 16px; /* Prevent zoom on iOS */
+    font-size: 16px;
+    /* Prevent zoom on iOS */
     min-height: 48px;
   }
-  
+
   h2 {
     font-size: 18px;
     margin-bottom: 25px;
     line-height: 1.2;
   }
-  
+
   .logo {
     margin-bottom: 20px;
   }
-  
+
   .logo img {
     max-width: 80px;
   }
-  
+
   .links {
     gap: 10px;
     margin: 20px 0 30px 0;
   }
-  
+
   .links a {
     font-size: 12px;
     padding: 8px 10px;
     min-height: 40px;
   }
-  
+
   .link-icon {
     font-size: 18px;
   }
-  
+
   .login-button {
     padding: 12px 28px;
     font-size: 15px;
     min-width: 160px;
     min-height: 48px;
   }
-  
+
   .login-image {
     padding: 20px 15px;
     min-height: 200px;
   }
-  
+
   .login-image img {
     min-height: 180px;
     max-height: 250px;
     border-radius: 12px;
   }
-  
+
   .eye-icon {
     min-width: 40px;
     min-height: 40px;
@@ -539,61 +625,61 @@ input[type="password"]::placeholder {
     padding-top: 8px;
     padding-bottom: 8px;
   }
-  
+
   .login-card {
     border-radius: 10px;
     margin: 0;
   }
-  
+
   .login-form {
     padding: 20px 15px;
   }
-  
+
   h2 {
     font-size: 16px;
     margin-bottom: 20px;
   }
-  
+
   .logo {
     margin-bottom: 15px;
   }
-  
+
   .logo img {
     max-width: 70px;
   }
-  
+
   .form-group {
     margin-bottom: 18px;
   }
-  
+
   .form-group label {
     font-size: 12px;
   }
-  
+
   input[type="text"],
   input[type="password"] {
     font-size: 15px;
     min-height: 44px;
   }
-  
+
   .links a {
     font-size: 11px;
     padding: 6px 8px;
     min-height: 36px;
   }
-  
+
   .login-button {
     padding: 10px 24px;
     font-size: 14px;
     min-width: 140px;
     min-height: 44px;
   }
-  
+
   .login-image {
     padding: 15px 10px;
     min-height: 180px;
   }
-  
+
   .login-image img {
     min-height: 160px;
     max-height: 220px;
@@ -609,27 +695,27 @@ input[type="password"]::placeholder {
     padding-top: 5px;
     padding-bottom: 5px;
   }
-  
+
   .login-card {
     margin: 0;
   }
-  
+
   .login-form {
     padding: 15px 12px;
   }
-  
+
   h2 {
     font-size: 15px;
   }
-  
+
   .logo img {
     max-width: 60px;
   }
-  
+
   .form-section {
     max-width: 100%;
   }
-  
+
   .login-button {
     min-width: 120px;
     padding: 8px 20px;
