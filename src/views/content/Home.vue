@@ -26,6 +26,15 @@ const error = ref(null)
 // Switch para selección múltiple
 const multipleSelection = ref(false)
 
+// Switch para seleccionar todas las carreras
+const selectAllCareers = ref(false)
+
+// Switch para aplicar filtros al mapa
+const applyFiltersToMap = ref(false)
+
+// Coordenadas filtradas para el mapa (cuando se aplican filtros)
+const filteredCoordinates = ref([])
+
 // Lista de carreras disponibles
 const careers = ref([
   { id: 1, name: 'Licenciatura en Administración Municipal', icon: 'mdi:office-building', selected: false },
@@ -56,8 +65,35 @@ const selectedCareers = computed(() => {
 watch(selectedCareers, (newSelection) => {
   if (newSelection.length > 0) {
     consultData()
+    // Si el filtro del mapa está activo, actualizar coordenadas filtradas
+    if (applyFiltersToMap.value) {
+      loadFilteredCoordinates()
+    }
   }
 }, { deep: true })
+
+// Watch para el toggle de seleccionar todas las carreras
+watch(selectAllCareers, (newValue) => {
+  if (newValue) {
+    // Activar selección múltiple y seleccionar todas las carreras
+    multipleSelection.value = true
+    careers.value.forEach(c => c.selected = true)
+  } else {
+    // Deseleccionar todas las carreras
+    careers.value.forEach(c => c.selected = false)
+  }
+})
+
+// Watch para el toggle de aplicar filtros al mapa
+watch(applyFiltersToMap, (newValue) => {
+  if (newValue && selectedCareers.value.length > 0) {
+    // Cargar coordenadas filtradas por las carreras seleccionadas
+    loadFilteredCoordinates()
+  } else {
+    // Cargar todas las coordenadas sin filtros
+    loadAllCoordinates()
+  }
+})
 
 // Función para alternar selección de carrera
 const toggleCareer = (careerId: number) => {
@@ -79,7 +115,23 @@ const loadAllCoordinates = async () => {
   try {
     // Llamar a la API sin filtros (array vacío)
     const coordsResult = await statsApi.getStudentCoordinates([])
-    
+
+    if (coordsResult.success) {
+      studentCoordinates.value = coordsResult.data
+    } else {
+      studentCoordinates.value = []
+    }
+  } catch (err) {
+    studentCoordinates.value = []
+  }
+}
+
+// Función para cargar coordenadas filtradas por las carreras seleccionadas
+const loadFilteredCoordinates = async () => {
+  try {
+    const selectedCareerNames = selectedCareers.value.map(career => career.name)
+    const coordsResult = await statsApi.getStudentCoordinates(selectedCareerNames)
+
     if (coordsResult.success) {
       studentCoordinates.value = coordsResult.data
     } else {
@@ -150,11 +202,15 @@ onMounted(() => {
         <h2 class="section-title">Consulta de alumnos totales por carrera</h2>
         <p class="section-subtitle">Selecciona una carrera</p>
         
-        <!-- Switch para selección múltiple -->
+        <!-- Switches para selección -->
         <div class="selection-mode">
           <label class="switch-label">
             <span class="switch-text">Varios</span>
             <ToggleSwitch v-model="multipleSelection" class="selection-switch" />
+          </label>
+          <label class="switch-label">
+            <span class="switch-text">Seleccionar todas</span>
+            <ToggleSwitch v-model="selectAllCareers" class="selection-switch" />
           </label>
         </div>
         
@@ -245,6 +301,24 @@ onMounted(() => {
     <div class="map-section">
       <h2 class="section-title">Mapa de Distribución de Alumnos por Municipio</h2>
       <p class="section-subtitle">Visualiza la procedencia de los estudiantes en Oaxaca</p>
+
+      <!-- Toggle para aplicar filtros al mapa -->
+      <div class="map-filter-toggle">
+        <label class="switch-label">
+          <span class="switch-text">Aplicar filtros</span>
+          <ToggleSwitch v-model="applyFiltersToMap" class="selection-switch" />
+        </label>
+        <span v-if="applyFiltersToMap && selectedCareers.length > 0" class="filter-info">
+          Mostrando: {{ selectedCareers.length }} carrera{{ selectedCareers.length > 1 ? 's' : '' }} seleccionada{{ selectedCareers.length > 1 ? 's' : '' }}
+        </span>
+        <span v-else-if="applyFiltersToMap && selectedCareers.length === 0" class="filter-warning">
+          Selecciona al menos una carrera para filtrar
+        </span>
+        <span v-else class="filter-info">
+          Mostrando: Todos los estudiantes
+        </span>
+      </div>
+
       <MapComponent :coordinates="studentCoordinates" />
     </div>
   </div>
@@ -303,6 +377,7 @@ onMounted(() => {
 .selection-mode {
   display: flex;
   justify-content: center;
+  gap: 2rem;
   margin-bottom: 2rem;
   padding: 1.25rem;
   background: #ffffff;
@@ -587,6 +662,30 @@ onMounted(() => {
 .map-section .section-subtitle {
   text-align: center;
   margin-bottom: 1.5rem;
+}
+
+.map-filter-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.filter-info {
+  font-size: 0.9rem;
+  color: #2D6849;
+  font-weight: 500;
+}
+
+.filter-warning {
+  font-size: 0.9rem;
+  color: #DC2626;
+  font-weight: 500;
 }
 
 @media (max-width: 1024px) {
